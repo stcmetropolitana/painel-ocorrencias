@@ -341,6 +341,35 @@ tr.r.open td{background:var(--panel2)}
   .alerts{grid-template-columns:1fr}
   .hide-sm{display:none}
 }
+
+/* ===== cards compactos: os 3 cabem na tela ===== */
+.regs .flow-head{margin-bottom:4px}
+.reg{padding:10px 14px 12px;gap:8px}
+.reg h3{font-size:clamp(18px,1.6vw,22px)}
+.reg.total h3{font-size:clamp(20px,1.9vw,26px)}
+.reg .sub2{font-size:12px;margin-top:0}
+.reg-topo .reg{width:min(100%,760px)}
+.mini-termo{gap:4px}
+.mt-top{font-size:12px}
+.nv-badge{font-size:12px;padding:2px 9px}
+.termo.mini{--th:16px}
+.termo.mini.sem-bulbo .ponteiro,.ponteiro{width:18px;height:18px;border-width:2px}
+.termo-niveis.mini{font-size:10.5px}
+.mt-motivo{font-size:11.5px}
+.inds{gap:6px}
+.ind{padding:3px 7px;flex-direction:row;align-items:center;justify-content:space-between;gap:6px}
+.ind b{font-size:15px}
+.ind-k{font-size:11px}
+.reg-kpis{gap:6px}
+.reg-kpis .v{font-size:clamp(24px,2.2vw,32px)}
+.reg-kpis .k{font-size:12px;margin-top:1px}
+.reg-abr{gap:4px;padding-top:6px}
+.reg-abr .abr-t{font-size:12.5px;padding:0 0 4px;margin-bottom:2px;border-bottom-width:2px}
+.ab-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px 18px}
+.ab{grid-template-columns:92px minmax(0,1fr) 30px;gap:6px;font-size:12.5px}
+.ab .track{height:7px}
+.ramos{height:34px}
+@media (max-width:700px){.ab-grid{grid-template-columns:1fr}}
 </style>
 <!-- A conexão com o Supabase fica no arquivo config.js, no mesmo repositório.
      Assim, ao atualizar este index.html, não é preciso colar a chave de novo. -->
@@ -648,7 +677,7 @@ const CONTINGENCIA={
   indicadores:[
     {id:"oc",   nome:"Ocorrências",                limites:[80,150,250]},
     {id:"cli",  nome:"Clientes afetados",          limites:[801,1500,5000]},  // Nível 1 até 800
-    {id:"rede", nome:"Transformador, chave ou MT", limites:[29,45,60]}      // Nível 1 até 28 (níveis 3 e 4 provisórios)
+    {id:"rede", nome:"Transformador, chave ou MT", curto:"Transf., chave ou MT", limites:[29,45,60]}      // Nível 1 até 28 (níveis 3 e 4 provisórios)
   ],
   nomes:["","Normal","Atenção","Alerta","Crise"],
   nivel4ExigeDoisIndicadores:true,   // Nível 4 só com pelo menos 2 indicadores no 4
@@ -684,7 +713,7 @@ function nivelRegional(reg,v){
 }
 function termoHTML(r,titulo,motivo){
   const n=r.nivel,cor=NIV_COR[n],fill=Math.max(4,Math.min(100,(r.pos!=null?r.pos:n-.5)/4*100));
-  const chips=(r.por||[]).map(p=>`<div class="ind"><span class="ind-k"><i style="background:${NIV_COR[p.nivel]}"></i>${esc(p.nome)}</span><b class="num">${fmtN(p.valor)}</b></div>`).join("");
+  const chips=(r.por||[]).map(p=>`<div class="ind"><span class="ind-k"><i style="background:${NIV_COR[p.nivel]}"></i>${esc(p.curto||p.nome)}</span><b class="num">${fmtN(p.valor)}</b></div>`).join("");
   return `<div class="mini-termo">
     <div class="mt-top"><span>${esc(titulo)}</span><span class="nv-badge" style="background:${cor};color:${n===2?"#1a1a1a":"#fff"}">Nível ${n} · ${esc(CONTINGENCIA.nomes[n])}</span></div>
     <div class="termo mini sem-bulbo" aria-hidden="true">
@@ -729,7 +758,7 @@ function renderRegs(all){
       <div><h3>${esc(g.nome)}</h3><div class="sub2">${esc(g.desc)} · ${fmtN(em)} emergenciais, ${fmtN(n-em)} programadas</div></div>
       ${termo}
       <div class="reg-kpis"><div><div class="v num">${fmtN(n)}</div><div class="k">ocorrências</div></div><div><div class="v num">${fmtN(ucs)}</div><div class="k">clientes afetados</div></div></div>
-      <div class="reg-abr"><span class="t abr-t">Ocorrências por abrangência</span>${lista.map(([k,v])=>`<div class="ab"><span>${esc(k)}</span><span class="track"><span style="width:${v/mx*100}%"></span></span><b class="num">${fmtN(v)}</b></div>`).join("")||'<span class="small">Sem ocorrências</span>'}</div>
+      <div class="reg-abr"><span class="t abr-t">Ocorrências por abrangência</span><div class="ab-grid">${lista.map(([k,v])=>`<div class="ab"><span>${esc(k)}</span><span class="track"><span style="width:${v/mx*100}%"></span></span><b class="num">${fmtN(v)}</b></div>`).join("")||'<span class="small">Sem ocorrências</span>'}</div></div>
     </button>`});
   $("regs").innerHTML=`<div class="reg-topo">${cards[0]}</div>
     <div class="ramos" aria-hidden="true"><span class="v"></span><span class="hl"></span><span class="hr"></span><span class="e"></span><span class="d"></span></div>
