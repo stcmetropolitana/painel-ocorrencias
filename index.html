@@ -312,9 +312,9 @@ tr.r.open td{background:var(--panel2)}
 .zonas{position:absolute;inset:0;display:grid;grid-template-columns:repeat(4,1fr)}
 .zonas span{opacity:.16}
 .zonas span+span{border-left:2px dashed color-mix(in srgb,var(--marca) 45%,transparent)}
-.z1{background:#1E9A57}.z2{background:#E5B400}.z3{background:#E86A1A}.z4{background:#D1332B}
+.z1{background:#1E8A4F}.z2{background:#E5B400}.z3{background:#C62828}.z4{background:#8E0000}
 .mercurio{position:absolute;inset:4px 4px 4px 0;border-radius:0 999px 999px 0;
-  background:linear-gradient(90deg,#1E9A57 0%,#1E9A57 20%,#E5B400 37%,#E5B400 45%,#E86A1A 62%,#E86A1A 70%,#D1332B 87%,#D1332B 100%);
+  background:linear-gradient(90deg,#1E8A4F 0%,#1E8A4F 20%,#E5B400 37%,#E5B400 45%,#C62828 62%,#C62828 72%,#8E0000 88%,#8E0000 100%);
   clip-path:inset(0 88% 0 0 round 0 999px 999px 0);animation:subir 9s ease-in-out infinite alternate}
 @keyframes subir{0%{clip-path:inset(0 88% 0 0 round 0 999px 999px 0)}100%{clip-path:inset(0 4% 0 0 round 0 999px 999px 0)}}
 .termo-niveis{display:grid;grid-template-columns:repeat(4,1fr);max-width:980px;margin:8px auto 0;padding-left:48px;font-size:14px;font-weight:680;text-align:center}
@@ -393,6 +393,31 @@ tr.r.open td{background:var(--panel2)}
 .nv-badge{padding:3px 14px;gap:8px;border-radius:8px}
 .nv-badge b{font-size:clamp(15px,1.3vw,18px)}
 .nv-badge span{font-size:clamp(11.5px,1vw,13px)}
+
+/* ===== cor do card pelo nível: 1 verde · 2 amarelo · 3 vermelho · 4 vermelho pulsando ===== */
+.regs .reg.cor{--tc:#fff;--tr:rgba(255,255,255,.25);--bar:#fff;--chip:rgba(255,255,255,.15);--lin:rgba(255,255,255,.3);
+  background:var(--cbg);color:var(--tc);border:none;border-top:6px solid rgba(0,0,0,.2);box-shadow:0 8px 22px rgba(0,0,0,.18)}
+.regs .reg.cor.niv1{--cbg:#1E8A4F}
+.regs .reg.cor.niv2{--cbg:#F2C200;--tc:#1d1d1d;--tr:rgba(0,0,0,.14);--bar:rgba(0,0,0,.7);--chip:rgba(255,255,255,.4);--lin:rgba(0,0,0,.2)}
+.regs .reg.cor.niv3{--cbg:#C62828}
+.regs .reg.cor.niv4{--cbg:#C62828;animation:cardCrise 1.1s ease-in-out infinite}
+@keyframes cardCrise{0%,100%{background:#C62828;box-shadow:0 0 0 0 rgba(198,40,40,.75),0 8px 22px rgba(0,0,0,.2)}50%{background:#E53935;box-shadow:0 0 0 16px rgba(198,40,40,0),0 8px 22px rgba(0,0,0,.2)}}
+.regs .reg.cor h3,.regs .reg.cor .v,.regs .reg.cor .ab,.regs .reg.cor .ab b,.regs .reg.cor .ind b{color:var(--tc)}
+.regs .reg.cor .sub2,.regs .reg.cor .k,.regs .reg.cor .mt-lbl,.regs .reg.cor .ind-k{color:var(--tc);opacity:.85}
+.regs .reg.cor .reg-abr{border-top-color:var(--lin)}
+.regs .reg.cor .reg-abr .abr-t{color:var(--tc)!important;border-bottom-color:var(--lin)}
+.regs .reg.cor .ab .track{background:var(--tr)}
+.regs .reg.cor .ab .track span{background:var(--bar)}
+.regs .reg.cor .ind{background:var(--chip)}
+.regs .reg.cor .ind-k i{box-shadow:0 0 0 2px rgba(255,255,255,.85)}
+.regs .reg.cor .termo.mini.sem-bulbo .tubo{border-color:var(--tc)}
+.regs .reg.cor .termo-niveis.mini span{color:var(--tc);opacity:.75}
+.regs .reg.cor .nv-badge{background:#fff!important;color:#1d1d1d!important;box-shadow:0 3px 10px rgba(0,0,0,.25)}
+.regs .reg.cor.niv3 .nv-badge,.regs .reg.cor.niv4 .nv-badge{color:#C62828!important}
+.regs .reg.cor.niv1 .nv-badge{color:#1E8A4F!important}
+.regs .reg.cor .ponteiro{border-color:#fff}
+.regs .reg.cor.on{outline:4px solid var(--marca);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.regs .reg.cor.niv4{animation:none}}
 </style>
 <!-- A conexão com o Supabase fica no arquivo config.js, no mesmo repositório.
      Assim, ao atualizar este index.html, não é preciso colar a chave de novo. -->
@@ -706,7 +731,7 @@ const CONTINGENCIA={
   nivel4ExigeDoisIndicadores:true,   // Nível 4 só com pelo menos 2 indicadores no 4
   desceAposDuasAtualizacoes:true     // sobe na hora; só desce se a atualização anterior também estava abaixo
 };
-const NIV_COR=["","#1E9A57","#E5B400","#E86A1A","#D1332B"];
+const NIV_COR=["","#1E8A4F","#E5B400","#C62828","#C62828"];
 function indicadores(rows){
   const em=rows.filter(o=>o.tipo==="E");
   return{oc:em.length,cli:em.reduce((s,o)=>s+(o.ucs||0),0),
@@ -776,7 +801,7 @@ function renderRegs(all){
     const mx=Math.max(1,...lista.map(x=>x[1]));
     const on=g.total?false:S.f.reg===g.id, off=S.f.reg&&!g.total&&S.f.reg!==g.id;
     const nivCard=g.total?Math.max(niv["Goiânia"].nivel,niv["Metropolitana"].nivel):niv[g.id].nivel;
-    return `<button type="button" style="--nc:${NIV_COR[nivCard]}" class="reg niv${nivCard}${g.total?" total":""}${on?" on":""}${off?" off":""}" data-reg="${esc(g.id)}" aria-pressed="${on}">
+    return `<button type="button" style="--nc:${NIV_COR[nivCard]}" class="reg cor niv${nivCard}${g.total?" total":""}${on?" on":""}${off?" off":""}" data-reg="${esc(g.id)}" aria-pressed="${on}">
       <div><h3>${esc(g.nome)}</h3><div class="sub2">${esc(g.desc)} · ${fmtN(em)} emergenciais, ${fmtN(n-em)} programadas</div></div>
       ${termo}
       <div class="reg-kpis"><div><div class="v num">${fmtN(n)}</div><div class="k">ocorrências</div></div><div><div class="v num">${fmtN(ucs)}</div><div class="k">clientes afetados</div></div></div>
