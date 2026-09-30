@@ -238,6 +238,44 @@ tr.r.open td{background:var(--panel2)}
 .ind-k i{width:9px;height:9px;border-radius:50%;flex:none}
 .ind b{font-size:18px}
 
+
+/* ===== v2: termômetro proporcional, ponteiro piscando, cards por nível ===== */
+.tubo-wrap{position:relative;flex:1;display:flex}
+.tubo-wrap .tubo{flex:1}
+.ponteiro{position:absolute;top:50%;width:22px;height:22px;border-radius:50%;transform:translate(-50%,-50%);border:3px solid #fff;box-shadow:0 0 0 2px rgba(0,0,0,.25);z-index:3;transition:left .8s ease}
+.ponteiro.pisca{animation:ponteiro 1.4s ease-in-out infinite}
+.ponteiro.p3{animation-duration:1s}.ponteiro.p4{animation-duration:.6s}
+@keyframes ponteiro{0%,100%{opacity:1;box-shadow:0 0 0 2px rgba(0,0,0,.25),0 0 0 0 var(--nc,#E5B400)}50%{opacity:.35;box-shadow:0 0 0 2px rgba(0,0,0,.25),0 0 0 10px transparent}}
+@media (prefers-reduced-motion:reduce){.ponteiro.pisca{animation:none}}
+
+.reg.total .reg-abr .abr-t{color:#fff!important;border-bottom-color:var(--marca-2)}
+.reg.total .ind{background:rgba(255,255,255,.12)}
+.reg.total .ind-k{color:var(--marca-txt);opacity:.85}
+
+.reg-abr .abr-t{display:block;text-align:center;font-size:15px;font-weight:780;color:var(--brand)!important;text-transform:uppercase;letter-spacing:.04em;padding:4px 0 6px;border-bottom:2px solid var(--marca-2);margin-bottom:4px}
+
+.ramos{height:56px}
+.ramos span{background:var(--marca);border-radius:3px}
+.ramos .v{width:6px;height:50%}
+.ramos .h{height:6px;left:calc(25% - 6px);right:calc(25% - 6px)}
+.ramos .e,.ramos .d{width:6px;height:50%}
+.ramos .e{left:calc(25% - 7px)}.ramos .d{right:calc(25% - 7px)}
+.ramos::before{content:"";position:absolute;left:50%;top:50%;width:16px;height:16px;border-radius:50%;background:var(--marca-2);border:3px solid var(--marca);transform:translate(-50%,-50%);z-index:1}
+
+
+/* termômetro de uma bola só: o mercúrio anda até a situação atual e a bola fica na ponta */
+.termo.mini.sem-bulbo .tubo{border-left:3px solid var(--marca);border-radius:999px}
+.reg.total .termo.mini.sem-bulbo .tubo{border-color:#fff}
+.termo.mini.sem-bulbo .mercurio{inset:3px;border-radius:999px;animation:encher 1.6s ease-out both}
+.termo.mini.sem-bulbo .ponteiro{animation:andar 1.6s ease-out both}
+.termo.mini.sem-bulbo .ponteiro.pisca{animation:andar 1.6s ease-out both,ponteiro 1.4s ease-in-out 1.6s infinite}
+.termo.mini.sem-bulbo .ponteiro.p3{animation:andar 1.6s ease-out both,ponteiro 1s ease-in-out 1.6s infinite}
+.termo.mini.sem-bulbo .ponteiro.p4{animation:andar 1.6s ease-out both,ponteiro .6s ease-in-out 1.6s infinite}
+@keyframes encher{from{clip-path:inset(0 100% 0 0 round 999px)}}
+@keyframes andar{from{left:0}}
+.termo-niveis.mini{padding-left:0}
+@media (prefers-reduced-motion:reduce){.termo.mini.sem-bulbo .mercurio,.termo.mini.sem-bulbo .ponteiro,.termo.mini.sem-bulbo .ponteiro.pisca{animation:none}}
+
 /* termômetro de contingência */
 .termo{--bw:58px;--th:30px;display:flex;align-items:center;max-width:980px;margin:18px auto 0}
 .bulbo{width:var(--bw);height:var(--bw);border-radius:50%;background:var(--panel);border:4px solid var(--marca);flex:none;display:grid;place-items:center;position:relative;z-index:2;margin-right:-10px}
@@ -427,6 +465,7 @@ function rowsFromData(d){
     o.idade=o.dh?(refT-new Date(o.dh).getTime())/60000:null;
     o.prioritario=!!o.cli||(o.vip||0)>0;
     o.reg=norm(o.mun)==="goiania"?"Goiânia":"Metropolitana";
+    o.ptp=/PERMISS[AÃ]O\s+(DE\s+)?TRABALHO\s+PROGRAMAD/i.test(o.mot||"");  // não conta UCs nem abrangência
     return o});
 }
 
@@ -473,12 +512,12 @@ function render(){
 
   const rows=applyFilters(all);
   // figures
-  const ucs=rows.reduce((s,o)=>s+(o.ucs||0),0);
+  const ucs=rows.reduce((s,o)=>s+(o.ptp?0:(o.ucs||0)),0);
   const urg=rows.filter(o=>o.urgente).length;
   const em=rows.filter(o=>o.tipo==="E");
   const idades=em.map(o=>o.idade).filter(x=>x!=null);
   const medIdade=idades.length?idades.sort((a,b)=>a-b)[Math.floor(idades.length/2)]:null;
-  const trafos=rows.filter(o=>/transformador|chave/i.test(o.abr||"")).length;
+  const trafos=rows.filter(o=>!o.ptp&&/transformador|chave/i.test(o.abr||"")).length;
   $("figs").innerHTML=[
     [fmtN(rows.length),"ocorrências abertas"],
     [fmtN(ucs),"unidades consumidoras afetadas"],
@@ -594,26 +633,35 @@ function indicadores(rows){
     rede:em.filter(o=>/transformador|chave/i.test(o.abr||"")||String(o.aneel||"").toUpperCase()==="MT").length};
 }
 function nivelBruto(v){
-  const por=CONTINGENCIA.indicadores.map(i=>({...i,valor:v[i.id]||0,nivel:1+i.limites.filter(l=>(v[i.id]||0)>=l).length}));
+  const por=CONTINGENCIA.indicadores.map(i=>{
+    const val=v[i.id]||0,L=i.limites,nivel=1+L.filter(l=>val>=l).length;
+    // posição contínua: 0 a 4 (nível 1 = 0–1, nível 2 = 1–2 ...), proporcional à distância do próximo nível
+    const ini=[0,...L][nivel-1],fim=nivel<4?L[nivel-1]:L[2]+(L[2]-L[1]);
+    const frac=Math.max(0,Math.min(.97,(val-ini)/Math.max(1,fim-ini)));
+    return{...i,valor:val,nivel,pos:nivel-1+frac};
+  });
   let n=Math.max(...por.map(p=>p.nivel));
   if(n===4&&CONTINGENCIA.nivel4ExigeDoisIndicadores&&por.filter(p=>p.nivel===4).length<2)n=3;
-  return{nivel:n,por};
+  const pos=Math.min(Math.max(...por.map(p=>p.pos)),n-.03);
+  return{nivel:n,por,pos};
 }
 function nivelRegional(reg,v){
-  const atual=nivelBruto(v);let nivel=atual.nivel,mantido=false;
+  const atual=nivelBruto(v);let nivel=atual.nivel,pos=atual.pos,mantido=false;
   if(CONTINGENCIA.desceAposDuasAtualizacoes&&S.data){
     const ref=S.data.ref||S.data.uploadedAt;
     const ant=(S.hist||[]).filter(p=>p.t<ref&&p.reg&&p.reg[reg]).sort((a,b)=>a.t<b.t?-1:1).pop();
-    if(ant){const na=nivelBruto(ant.reg[reg]).nivel;if(na>nivel){nivel=na;mantido=true}}
+    if(ant){const pa=nivelBruto(ant.reg[reg]);if(pa.nivel>nivel){nivel=pa.nivel;pos=nivel-1+.03;mantido=true}}
   }
-  return{...atual,nivel,mantido};
+  return{...atual,nivel,pos,mantido};
 }
 function termoHTML(r,titulo,motivo){
-  const n=r.nivel,cor=NIV_COR[n],fill=[0,25,50,75,100][n];
+  const n=r.nivel,cor=NIV_COR[n],fill=Math.max(4,Math.min(100,(r.pos!=null?r.pos:n-.5)/4*100));
   const chips=(r.por||[]).map(p=>`<div class="ind"><span class="ind-k"><i style="background:${NIV_COR[p.nivel]}"></i>${esc(p.nome)}</span><b class="num">${fmtN(p.valor)}</b></div>`).join("");
   return `<div class="mini-termo">
     <div class="mt-top"><span>${esc(titulo)}</span><span class="nv-badge" style="background:${cor};color:${n===2?"#1a1a1a":"#fff"}">Nível ${n} · ${esc(CONTINGENCIA.nomes[n])}</span></div>
-    <div class="termo mini" aria-hidden="true"><div class="bulbo"><i style="background:${cor}"></i></div><div class="tubo"><div class="zonas"><span class="z1"></span><span class="z2"></span><span class="z3"></span><span class="z4"></span></div><div class="mercurio fixo" style="clip-path:inset(0 ${100-fill}% 0 0 round 0 999px 999px 0)"></div></div></div>
+    <div class="termo mini sem-bulbo" aria-hidden="true">
+      <div class="tubo-wrap"><div class="tubo"><div class="zonas"><span class="z1"></span><span class="z2"></span><span class="z3"></span><span class="z4"></span></div><div class="mercurio fixo" style="clip-path:inset(0 ${100-fill}% 0 0 round 999px)"></div></div>
+      <span class="ponteiro${n>=2?" pisca p"+n:""}" style="left:${fill}%;background:${cor}"></span></div></div>
     <div class="termo-niveis mini" aria-hidden="true"><span class="n1">Nível 1</span><span class="n2">Nível 2</span><span class="n3">Nível 3</span><span class="n4">Nível 4</span></div>
     <div class="mt-motivo">${motivo}</div>
     ${chips?`<div class="inds">${chips}</div>`:""}
@@ -641,18 +689,19 @@ function renderRegs(all){
     if(g.total){
       const mx=Math.max(niv["Goiânia"].nivel,niv["Metropolitana"].nivel);
       const quem=["Goiânia","Metropolitana"].filter(k=>niv[k].nivel===mx).map(k=>"Regional "+k);
-      termo=termoHTML({nivel:mx},"Nível de contingência",mx===1?"As duas regionais em nível normal.":"Maior nível entre as regionais: "+quem.join(" e ")+".");
+      termo=termoHTML({nivel:mx,pos:Math.max(...["Goiânia","Metropolitana"].filter(k=>niv[k].nivel===mx).map(k=>niv[k].pos))},"Nível de contingência",mx===1?"As duas regionais em nível normal.":"Maior nível entre as regionais: "+quem.join(" e ")+".");
     }else termo=termoHTML(niv[g.id],"Nível de contingência",motivoTexto(niv[g.id]));
-    const n=g.rows.length,ucs=g.rows.reduce((s,o)=>s+(o.ucs||0),0),em=g.rows.filter(o=>o.tipo==="E").length;
-    const ab={};for(const o of g.rows){const k=o.abr||"Não informado";ab[k]=(ab[k]||0)+1}
+    const n=g.rows.length,ucs=g.rows.reduce((s,o)=>s+(o.ptp?0:(o.ucs||0)),0),em=g.rows.filter(o=>o.tipo==="E").length;
+    const ab={};for(const o of g.rows){if(o.ptp)continue;const k=o.abr||"Não informado";ab[k]=(ab[k]||0)+1}
     const lista=Object.entries(ab).sort((a,b)=>{const ia=ABR_ORDEM.indexOf(a[0]),ib=ABR_ORDEM.indexOf(b[0]);return (ia<0?99:ia)-(ib<0?99:ib)||b[1]-a[1]});
     const mx=Math.max(1,...lista.map(x=>x[1]));
     const on=g.total?false:S.f.reg===g.id, off=S.f.reg&&!g.total&&S.f.reg!==g.id;
-    return `<button type="button" class="reg${g.total?" total":""}${on?" on":""}${off?" off":""}" data-reg="${esc(g.id)}" aria-pressed="${on}">
+    const nivCard=g.total?Math.max(niv["Goiânia"].nivel,niv["Metropolitana"].nivel):niv[g.id].nivel;
+    return `<button type="button" style="--nc:${NIV_COR[nivCard]}" class="reg niv${nivCard}${g.total?" total":""}${on?" on":""}${off?" off":""}" data-reg="${esc(g.id)}" aria-pressed="${on}">
       <div><h3>${esc(g.nome)}</h3><div class="sub2">${esc(g.desc)} · ${fmtN(em)} emergenciais, ${fmtN(n-em)} programadas</div></div>
       ${termo}
       <div class="reg-kpis"><div><div class="v num">${fmtN(n)}</div><div class="k">ocorrências</div></div><div><div class="v num">${fmtN(ucs)}</div><div class="k">clientes afetados</div></div></div>
-      <div class="reg-abr"><span class="t">Ocorrências por abrangência</span>${lista.map(([k,v])=>`<div class="ab"><span>${esc(k)}</span><span class="track"><span style="width:${v/mx*100}%"></span></span><b class="num">${fmtN(v)}</b></div>`).join("")||'<span class="small">Sem ocorrências</span>'}</div>
+      <div class="reg-abr"><span class="t abr-t">Ocorrências por abrangência</span>${lista.map(([k,v])=>`<div class="ab"><span>${esc(k)}</span><span class="track"><span style="width:${v/mx*100}%"></span></span><b class="num">${fmtN(v)}</b></div>`).join("")||'<span class="small">Sem ocorrências</span>'}</div>
     </button>`});
   $("regs").innerHTML=`<div class="reg-topo">${cards[0]}</div>
     <div class="ramos" aria-hidden="true"><span class="v"></span><span class="h"></span><span class="e"></span><span class="d"></span></div>
