@@ -370,6 +370,29 @@ tr.r.open td{background:var(--panel2)}
 .ab .track{height:7px}
 .ramos{height:34px}
 @media (max-width:700px){.ab-grid{grid-template-columns:1fr}}
+
+/* ===== cards simétricos + nível de contingência em destaque ===== */
+.reg-topo .reg{width:min(100%,540px)}
+.reg-filhos{grid-template-columns:repeat(2,minmax(0,540px));justify-content:center;gap:28px}
+.ramos{max-width:1108px}
+.mt-top{flex-direction:column;justify-content:center;gap:4px;text-align:center}
+.mt-lbl{font-size:11.5px;font-weight:750;text-transform:uppercase;letter-spacing:.08em}
+.nv-badge{display:inline-flex;align-items:baseline;gap:10px;padding:5px 20px;border-radius:10px;font-size:15px;font-weight:700;box-shadow:0 4px 14px color-mix(in srgb,var(--nc) 45%,transparent)}
+.nv-badge b{font-size:clamp(20px,1.9vw,26px);font-weight:850;letter-spacing:.02em;line-height:1.1}
+.nv-badge span{font-size:clamp(14px,1.3vw,17px);font-weight:750;text-transform:uppercase;letter-spacing:.04em}
+.nv-badge.nb3,.nv-badge.nb4{animation:alertaBadge 1.6s ease-in-out infinite}
+.nv-badge.nb4{animation-duration:.9s}
+@keyframes alertaBadge{0%,100%{box-shadow:0 4px 14px color-mix(in srgb,var(--nc) 45%,transparent)}50%{box-shadow:0 0 0 6px color-mix(in srgb,var(--nc) 30%,transparent),0 4px 20px color-mix(in srgb,var(--nc) 60%,transparent)}}
+.reg.total .nv-badge{box-shadow:0 0 0 2px rgba(255,255,255,.7),0 4px 14px rgba(0,0,0,.25)}
+@media (prefers-reduced-motion:reduce){.nv-badge.nb3,.nv-badge.nb4{animation:none}}
+
+.mt-top{flex-direction:row;flex-wrap:wrap;gap:6px 12px}
+.regs .flow-head{margin-bottom:2px}
+.reg .sub2{font-size:11.5px}
+
+.nv-badge{padding:3px 14px;gap:8px;border-radius:8px}
+.nv-badge b{font-size:clamp(15px,1.3vw,18px)}
+.nv-badge span{font-size:clamp(11.5px,1vw,13px)}
 </style>
 <!-- A conexão com o Supabase fica no arquivo config.js, no mesmo repositório.
      Assim, ao atualizar este index.html, não é preciso colar a chave de novo. -->
@@ -715,12 +738,11 @@ function termoHTML(r,titulo,motivo){
   const n=r.nivel,cor=NIV_COR[n],fill=Math.max(4,Math.min(100,(r.pos!=null?r.pos:n-.5)/4*100));
   const chips=(r.por||[]).map(p=>`<div class="ind"><span class="ind-k"><i style="background:${NIV_COR[p.nivel]}"></i>${esc(p.curto||p.nome)}</span><b class="num">${fmtN(p.valor)}</b></div>`).join("");
   return `<div class="mini-termo">
-    <div class="mt-top"><span>${esc(titulo)}</span><span class="nv-badge" style="background:${cor};color:${n===2?"#1a1a1a":"#fff"}">Nível ${n} · ${esc(CONTINGENCIA.nomes[n])}</span></div>
+    <div class="mt-top"><span class="mt-lbl">${esc(titulo)}</span><span class="nv-badge nb${n}" title="${esc(String(motivo).replace(/<[^>]+>/g,""))}" style="--nc:${cor};background:${cor};color:${n===2?"#1a1a1a":"#fff"}"><b>NÍVEL ${n}</b><span>${esc(CONTINGENCIA.nomes[n])}</span></span></div>
     <div class="termo mini sem-bulbo" aria-hidden="true">
       <div class="tubo-wrap"><div class="tubo"><div class="zonas"><span class="z1"></span><span class="z2"></span><span class="z3"></span><span class="z4"></span></div><div class="mercurio fixo" style="--fill:${fill}%;clip-path:inset(0 ${100-fill}% 0 0 round 999px)"></div></div>
       <span class="ponteiro${n>=2?" pisca p"+n:""}" style="--fill:${fill}%;left:${fill}%;background:${cor}"></span></div></div>
     <div class="termo-niveis mini" aria-hidden="true"><span class="n1">Nível 1</span><span class="n2">Nível 2</span><span class="n3">Nível 3</span><span class="n4">Nível 4</span></div>
-    <div class="mt-motivo">${motivo}</div>
     ${chips?`<div class="inds">${chips}</div>`:""}
   </div>`;
 }
