@@ -227,6 +227,17 @@ tr.r.open td{background:var(--panel2)}
 .reg.total .n1{color:#7BE3A8}.reg.total .n2{color:#FFD84D}.reg.total .n3{color:#FFA964}.reg.total .n4{color:#FF8A80}
 @media (prefers-reduced-motion:reduce){.mt-wip i{animation:none}}
 
+
+.termo.mini .mercurio.fixo{animation:none;transition:clip-path .8s ease}
+.nv-badge{font-size:12.5px;font-weight:750;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.mt-motivo{font-size:12.5px;color:var(--muted);line-height:1.35}
+.reg.total .mt-motivo{color:var(--marca-txt);opacity:.85}
+.inds{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.ind{background:var(--panel2);border-radius:6px;padding:6px 8px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.ind-k{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ind-k i{width:9px;height:9px;border-radius:50%;flex:none}
+.ind b{font-size:18px}
+
 /* termômetro de contingência */
 .termo{--bw:58px;--th:30px;display:flex;align-items:center;max-width:980px;margin:18px auto 0}
 .bulbo{width:var(--bw);height:var(--bw);border-radius:50%;background:var(--panel);border:4px solid var(--marca);flex:none;display:grid;place-items:center;position:relative;z-index:2;margin-right:-10px}
@@ -560,6 +571,61 @@ function renderFresh(){
 }
 
 
+
+/* ===== NÍVEL DE CONTINGÊNCIA — regras (ajuste os limites aqui) =====
+   Conta só ocorrências EMERGENCIAIS (programadas ficam de fora).
+   Cada lista traz o valor a partir do qual começa o Nível 2, o Nível 3 e o Nível 4.
+   Os limites valem para cada regional; a Gerência Centro STC assume o maior
+   nível entre as duas regionais. */
+const CONTINGENCIA={
+  indicadores:[
+    {id:"oc",   nome:"Ocorrências",                limites:[80,150,250]},
+    {id:"cli",  nome:"Clientes afetados",          limites:[801,1500,5000]},  // Nível 1 até 800
+    {id:"rede", nome:"Transformador, chave ou MT", limites:[29,45,60]}      // Nível 1 até 28 (níveis 3 e 4 provisórios)
+  ],
+  nomes:["","Normal","Atenção","Alerta","Crise"],
+  nivel4ExigeDoisIndicadores:true,   // Nível 4 só com pelo menos 2 indicadores no 4
+  desceAposDuasAtualizacoes:true     // sobe na hora; só desce se a atualização anterior também estava abaixo
+};
+const NIV_COR=["","#1E9A57","#E5B400","#E86A1A","#D1332B"];
+function indicadores(rows){
+  const em=rows.filter(o=>o.tipo==="E");
+  return{oc:em.length,cli:em.reduce((s,o)=>s+(o.ucs||0),0),
+    rede:em.filter(o=>/transformador|chave/i.test(o.abr||"")||String(o.aneel||"").toUpperCase()==="MT").length};
+}
+function nivelBruto(v){
+  const por=CONTINGENCIA.indicadores.map(i=>({...i,valor:v[i.id]||0,nivel:1+i.limites.filter(l=>(v[i.id]||0)>=l).length}));
+  let n=Math.max(...por.map(p=>p.nivel));
+  if(n===4&&CONTINGENCIA.nivel4ExigeDoisIndicadores&&por.filter(p=>p.nivel===4).length<2)n=3;
+  return{nivel:n,por};
+}
+function nivelRegional(reg,v){
+  const atual=nivelBruto(v);let nivel=atual.nivel,mantido=false;
+  if(CONTINGENCIA.desceAposDuasAtualizacoes&&S.data){
+    const ref=S.data.ref||S.data.uploadedAt;
+    const ant=(S.hist||[]).filter(p=>p.t<ref&&p.reg&&p.reg[reg]).sort((a,b)=>a.t<b.t?-1:1).pop();
+    if(ant){const na=nivelBruto(ant.reg[reg]).nivel;if(na>nivel){nivel=na;mantido=true}}
+  }
+  return{...atual,nivel,mantido};
+}
+function termoHTML(r,titulo,motivo){
+  const n=r.nivel,cor=NIV_COR[n],fill=[0,25,50,75,100][n];
+  const chips=(r.por||[]).map(p=>`<div class="ind"><span class="ind-k"><i style="background:${NIV_COR[p.nivel]}"></i>${esc(p.nome)}</span><b class="num">${fmtN(p.valor)}</b></div>`).join("");
+  return `<div class="mini-termo">
+    <div class="mt-top"><span>${esc(titulo)}</span><span class="nv-badge" style="background:${cor};color:${n===2?"#1a1a1a":"#fff"}">Nível ${n} · ${esc(CONTINGENCIA.nomes[n])}</span></div>
+    <div class="termo mini" aria-hidden="true"><div class="bulbo"><i style="background:${cor}"></i></div><div class="tubo"><div class="zonas"><span class="z1"></span><span class="z2"></span><span class="z3"></span><span class="z4"></span></div><div class="mercurio fixo" style="clip-path:inset(0 ${100-fill}% 0 0 round 0 999px 999px 0)"></div></div></div>
+    <div class="termo-niveis mini" aria-hidden="true"><span class="n1">Nível 1</span><span class="n2">Nível 2</span><span class="n3">Nível 3</span><span class="n4">Nível 4</span></div>
+    <div class="mt-motivo">${motivo}</div>
+    ${chips?`<div class="inds">${chips}</div>`:""}
+  </div>`;
+}
+function motivoTexto(r){
+  if(r.mantido)return"Mantido pela atualização anterior; desce se a próxima base também vier abaixo do limite.";
+  if(r.nivel===1)return"Todos os indicadores dentro do normal (emergenciais).";
+  const q=r.por.filter(p=>p.nivel>=r.nivel).map(p=>`${p.nome} (${fmtN(p.valor)})`);
+  return"Acionado por "+(q.length>1?q.slice(0,-1).join(", ")+" e "+q[q.length-1]:q[0])+" · só emergenciais.";
+}
+
 /* ---------- visão por regional ---------- */
 const ABR_ORDEM=["Subestação","Subestacao","Alimentador","Religador","Chave","Transformador","Consumidor","Nenhum"];
 function renderRegs(all){
@@ -568,7 +634,15 @@ function renderRegs(all){
     {id:"Goiânia",nome:"Regional Goiânia",desc:"Município de Goiânia",rows:all.filter(o=>o.reg==="Goiânia")},
     {id:"Metropolitana",nome:"Regional Metropolitana",desc:"Demais municípios",rows:all.filter(o=>o.reg==="Metropolitana")}
   ];
+  const niv={};
+  for(const g of grupos)if(!g.total)niv[g.id]=nivelRegional(g.id,indicadores(g.rows));
   const cards=grupos.map(g=>{
+    let termo;
+    if(g.total){
+      const mx=Math.max(niv["Goiânia"].nivel,niv["Metropolitana"].nivel);
+      const quem=["Goiânia","Metropolitana"].filter(k=>niv[k].nivel===mx).map(k=>"Regional "+k);
+      termo=termoHTML({nivel:mx},"Nível de contingência",mx===1?"As duas regionais em nível normal.":"Maior nível entre as regionais: "+quem.join(" e ")+".");
+    }else termo=termoHTML(niv[g.id],"Nível de contingência",motivoTexto(niv[g.id]));
     const n=g.rows.length,ucs=g.rows.reduce((s,o)=>s+(o.ucs||0),0),em=g.rows.filter(o=>o.tipo==="E").length;
     const ab={};for(const o of g.rows){const k=o.abr||"Não informado";ab[k]=(ab[k]||0)+1}
     const lista=Object.entries(ab).sort((a,b)=>{const ia=ABR_ORDEM.indexOf(a[0]),ib=ABR_ORDEM.indexOf(b[0]);return (ia<0?99:ia)-(ib<0?99:ib)||b[1]-a[1]});
@@ -576,11 +650,7 @@ function renderRegs(all){
     const on=g.total?false:S.f.reg===g.id, off=S.f.reg&&!g.total&&S.f.reg!==g.id;
     return `<button type="button" class="reg${g.total?" total":""}${on?" on":""}${off?" off":""}" data-reg="${esc(g.id)}" aria-pressed="${on}">
       <div><h3>${esc(g.nome)}</h3><div class="sub2">${esc(g.desc)} · ${fmtN(em)} emergenciais, ${fmtN(n-em)} programadas</div></div>
-      <div class="mini-termo" aria-hidden="true">
-        <div class="mt-top"><span>Nível de contingência</span><span class="mt-wip"><i></i>Em construção</span></div>
-        <div class="termo mini"><div class="bulbo"><i></i></div><div class="tubo"><div class="zonas"><span class="z1"></span><span class="z2"></span><span class="z3"></span><span class="z4"></span></div><div class="mercurio" style="animation-duration:${g.total?9:g.id==="Goiânia"?11:13}s;animation-delay:-${g.total?0:g.id==="Goiânia"?4:8}s"></div></div></div>
-        <div class="termo-niveis mini"><span class="n1">Nível 1</span><span class="n2">Nível 2</span><span class="n3">Nível 3</span><span class="n4">Nível 4</span></div>
-      </div>
+      ${termo}
       <div class="reg-kpis"><div><div class="v num">${fmtN(n)}</div><div class="k">ocorrências</div></div><div><div class="v num">${fmtN(ucs)}</div><div class="k">clientes afetados</div></div></div>
       <div class="reg-abr"><span class="t">Ocorrências por abrangência</span>${lista.map(([k,v])=>`<div class="ab"><span>${esc(k)}</span><span class="track"><span style="width:${v/mx*100}%"></span></span><b class="num">${fmtN(v)}</b></div>`).join("")||'<span class="small">Sem ocorrências</span>'}</div>
     </button>`});
@@ -620,7 +690,7 @@ async function handleFile(file){
     }finally{$("upBtn").disabled=false;$("upBtn").textContent="Atualizar base (XML)"}
   }else{setLocal(data);flash("Base carregada neste navegador: "+data.n+" ocorrências.",true)}
 }
-function histPoint(d){const r=rowsFromData(d);return{t:d.ref||d.uploadedAt,total:r.length,urg:r.filter(o=>o.urgente).length,ucs:r.reduce((s,o)=>s+(o.ucs||0),0)}}
+function histPoint(d){const r=rowsFromData(d);return{t:d.ref||d.uploadedAt,total:r.length,urg:r.filter(o=>o.urgente).length,ucs:r.reduce((s,o)=>s+(o.ucs||0),0),reg:{"Goiânia":indicadores(r.filter(o=>o.reg==="Goiânia")),"Metropolitana":indicadores(r.filter(o=>o.reg==="Metropolitana"))}}}
 function setLocal(d){
   S.data=d;
   try{let h=JSON.parse(localStorage.getItem("painelOc.hist")||"[]");const p=histPoint(d);h=h.filter(x=>x.t!==p.t);h.push(p);h=h.slice(-96);S.hist=h;localStorage.setItem("painelOc.hist",JSON.stringify(h));localStorage.setItem("painelOc.data",JSON.stringify(d))}catch(e){}
