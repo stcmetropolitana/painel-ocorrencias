@@ -264,16 +264,9 @@ tr.r.open td{background:var(--panel2)}
   .hide-sm{display:none}
 }
 </style>
-<script>
-/* ===== CONFIGURAÇÃO — preencha com os dados do seu projeto Supabase =====
-   Supabase > Project Settings > API:
-   url   = Project URL (ex.: https://abcdxyz.supabase.co)
-   chave = chave pública (anon ou publishable). NUNCA use a service_role aqui. */
-window.PAINEL_CONFIG = {
-  url:   "https://bjzvbjimrniooskmnieq.supabase.co",
-  chave: "COLE_AQUI_A_CHAVE_ANON"
-};
-</script>
+<!-- A conexão com o Supabase fica no arquivo config.js, no mesmo repositório.
+     Assim, ao atualizar este index.html, não é preciso colar a chave de novo. -->
+<script src="config.js"></script>
 </head>
 <body>
 <div class="login" id="login" hidden>
@@ -718,7 +711,7 @@ if(CONFIG_OK){
 }else{
   try{const d=JSON.parse(localStorage.getItem("painelOc.data")||"null");if(d){S.data=d;S.hist=JSON.parse(localStorage.getItem("painelOc.hist")||"[]")}}catch(e){}
   render();
-  flash("Conexão com o Supabase não configurada: o painel está funcionando só neste navegador. Preencha PAINEL_CONFIG no início do arquivo.");
+  flash("Sem conexão com o Supabase: o arquivo config.js não foi encontrado ou está sem a chave. O painel está funcionando só neste navegador e a base NÃO vai para os outros computadores.");
 }
 })();
 </script>
