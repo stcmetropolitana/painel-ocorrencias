@@ -718,17 +718,23 @@ function renderFresh(){
 
 /* ===== NÍVEL DE CONTINGÊNCIA — regras (ajuste os limites aqui) =====
    Conta só ocorrências EMERGENCIAIS (programadas ficam de fora).
-   Cada lista traz o valor a partir do qual começa o Nível 2, o Nível 3 e o Nível 4.
-   Os limites valem para cada regional; a Gerência Centro STC assume o maior
-   nível entre as duas regionais. */
+   Cada regional tem os seus limites. Cada lista traz o valor a partir do qual
+   começa o Nível 2, o Nível 3 e o Nível 4 (ou seja: "até" do nível anterior + 1).
+   A Gerência Centro STC assume o maior nível entre as duas regionais. */
 const CONTINGENCIA={
   indicadores:[
-    {id:"oc",   nome:"Ocorrências",                limites:[80,150,250]},
-    {id:"cli",  nome:"Clientes afetados",          limites:[801,1500,5000]},  // Nível 1 até 800
-    {id:"rede", nome:"Transformador, chave ou MT", curto:"Transf., chave ou MT", limites:[29,45,60]}      // Nível 1 até 28 (níveis 3 e 4 provisórios)
+    {id:"oc",   nome:"Ocorrências",
+      limites:{"Goiânia":[101,151,251],   "Metropolitana":[80,150,250]}},
+    {id:"cli",  nome:"Clientes afetados",
+      limites:{"Goiânia":[1001,1500,4001],"Metropolitana":[801,1500,5000]}},
+    {id:"rede", nome:"Transformador, chave ou MT", curto:"Transf., chave ou MT",
+      limites:{"Goiânia":[11,16,21],      "Metropolitana":[29,45,60]}}
   ],
+  /* Goiânia (definido pela operação): Nível 1 até 100 ocorr. / 1.000 clientes / 10 transf.;
+     Nível 2 até 150 / 1.499 / 15; Nível 3 até 250 / 4.000 / 20; Nível 4 acima disso.
+     Metropolitana: limites provisórios, aguardando definição. */
   nomes:["","Normal","Atenção","Alerta","Crise"],
-  nivel4ExigeDoisIndicadores:true,   // Nível 4 só com pelo menos 2 indicadores no 4
+  minIndicadores:2,                  // só muda de nível se pelo menos 2 indicadores estiverem acima do limite daquele nível
   desceAposDuasAtualizacoes:true     // sobe na hora; só desce se a atualização anterior também estava abaixo
 };
 const NIV_COR=["","#1E8A4F","#E5B400","#C62828","#C62828"];
@@ -737,25 +743,26 @@ function indicadores(rows){
   return{oc:em.length,cli:em.reduce((s,o)=>s+(o.ucs||0),0),
     rede:em.filter(o=>/transformador|chave/i.test(o.abr||"")||String(o.aneel||"").toUpperCase()==="MT").length};
 }
-function nivelBruto(v){
+function nivelBruto(v,reg){
   const por=CONTINGENCIA.indicadores.map(i=>{
-    const val=v[i.id]||0,L=i.limites,nivel=1+L.filter(l=>val>=l).length;
+    const val=v[i.id]||0,L=i.limites[reg],nivel=1+L.filter(l=>val>=l).length;
     // posição contínua: 0 a 4 (nível 1 = 0–1, nível 2 = 1–2 ...), proporcional à distância do próximo nível
     const ini=[0,...L][nivel-1],fim=nivel<4?L[nivel-1]:L[2]+(L[2]-L[1]);
     const frac=Math.max(0,Math.min(.97,(val-ini)/Math.max(1,fim-ini)));
     return{...i,valor:val,nivel,pos:nivel-1+frac};
   });
-  let n=Math.max(...por.map(p=>p.nivel));
-  if(n===4&&CONTINGENCIA.nivel4ExigeDoisIndicadores&&por.filter(p=>p.nivel===4).length<2)n=3;
-  const pos=Math.min(Math.max(...por.map(p=>p.pos)),n-.03);
+  // nível = o maior nível alcançado por pelo menos "minIndicadores" indicadores
+  const k=Math.max(1,Math.min(CONTINGENCIA.minIndicadores||1,por.length));
+  const n=por.map(p=>p.nivel).sort((a,b)=>b-a)[k-1];
+  const pos=Math.min(por.map(p=>p.pos).sort((a,b)=>b-a)[k-1],n-.03);
   return{nivel:n,por,pos};
 }
 function nivelRegional(reg,v){
-  const atual=nivelBruto(v);let nivel=atual.nivel,pos=atual.pos,mantido=false;
+  const atual=nivelBruto(v,reg);let nivel=atual.nivel,pos=atual.pos,mantido=false;
   if(CONTINGENCIA.desceAposDuasAtualizacoes&&S.data){
     const ref=S.data.ref||S.data.uploadedAt;
     const ant=(S.hist||[]).filter(p=>p.t<ref&&p.reg&&p.reg[reg]).sort((a,b)=>a.t<b.t?-1:1).pop();
-    if(ant){const pa=nivelBruto(ant.reg[reg]);if(pa.nivel>nivel){nivel=pa.nivel;pos=nivel-1+.03;mantido=true}}
+    if(ant){const pa=nivelBruto(ant.reg[reg],reg);if(pa.nivel>nivel){nivel=pa.nivel;pos=nivel-1+.03;mantido=true}}
   }
   return{...atual,nivel,pos,mantido};
 }
@@ -773,9 +780,12 @@ function termoHTML(r,titulo,motivo){
 }
 function motivoTexto(r){
   if(r.mantido)return"Mantido pela atualização anterior; desce se a próxima base também vier abaixo do limite.";
-  if(r.nivel===1)return"Todos os indicadores dentro do normal (emergenciais).";
-  const q=r.por.filter(p=>p.nivel>=r.nivel).map(p=>`${p.nome} (${fmtN(p.valor)})`);
-  return"Acionado por "+(q.length>1?q.slice(0,-1).join(", ")+" e "+q[q.length-1]:q[0])+" · só emergenciais.";
+  const lista=q=>q.length>1?q.slice(0,-1).join(", ")+" e "+q[q.length-1]:q[0];
+  const nome=p=>`${p.nome} (${fmtN(p.valor)})`;
+  let t=r.nivel===1?"Nível normal":"Acionado por "+lista(r.por.filter(p=>p.nivel>=r.nivel).map(nome));
+  const sozinho=r.por.filter(p=>p.nivel>r.nivel);
+  if(sozinho.length===1)t+=`. ${nome(sozinho[0])} já passou do limite do Nível ${r.nivel+1}; sobe quando mais um indicador passar`;
+  return t+" · só emergenciais.";
 }
 
 /* ---------- visão por regional ---------- */
