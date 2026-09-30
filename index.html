@@ -186,7 +186,7 @@ tr.r.open td{background:var(--panel2)}
 .ramos .e,.ramos .d{top:50%;width:3px;height:50%}
 .ramos .e{left:calc(25% - 5px)}.ramos .d{right:calc(25% - 5px)}
 .reg-filhos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
-@media (max-width:700px){.reg-filhos{grid-template-columns:minmax(0,1fr)}.ramos{height:24px}.ramos .h,.ramos .e,.ramos .d{display:none}}
+@media (max-width:700px){.reg-filhos{grid-template-columns:minmax(0,1fr)}.ramos{height:24px}.ramos .hl,.ramos .hr,.ramos .e,.ramos .d,.ramos::before{display:none}}
 .reg{background:var(--panel);border:1px solid var(--line);border-top:5px solid var(--marca-2);border-radius:10px;padding:14px 16px 16px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:12px;box-shadow:var(--shadow);transition:box-shadow .15s}
 .reg:hover{box-shadow:0 4px 14px rgba(0,51,141,.12)}
 .reg.on{outline:3px solid var(--marca-2);outline-offset:-1px}
@@ -275,6 +275,27 @@ tr.r.open td{background:var(--panel2)}
 @keyframes andar{from{left:0}}
 .termo-niveis.mini{padding-left:0}
 @media (prefers-reduced-motion:reduce){.termo.mini.sem-bulbo .mercurio,.termo.mini.sem-bulbo .ponteiro,.termo.mini.sem-bulbo .ponteiro.pisca{animation:none}}
+
+
+/* linhas de ligação com pulso de luz caminhando das regionais para a gerência */
+.ramos .hl,.ramos .hr{top:50%;height:6px;transform:translateY(-50%)}
+.ramos .hl{left:calc(25% - 6px);right:50%}
+.ramos .hr{left:50%;right:calc(25% - 6px)}
+.ramos span{overflow:hidden}
+.ramos span::after{content:"";position:absolute;inset:0;animation-duration:2.4s;animation-timing-function:linear;animation-iteration-count:infinite}
+.ramos .e::after,.ramos .d::after,.ramos .v::after{height:55%;inset:auto 0 auto 0;top:0;background:linear-gradient(to top,transparent,#9BE7FF 45%,#fff 50%,#9BE7FF 55%,transparent)}
+.ramos .hl::after,.ramos .hr::after{width:40%;inset:0 auto 0 0;background:linear-gradient(to right,transparent,#9BE7FF 45%,#fff 50%,#9BE7FF 55%,transparent)}
+.ramos .e::after,.ramos .d::after{animation-name:pulsoSobe1}
+.ramos .hl::after{animation-name:pulsoDir}
+.ramos .hr::after{animation-name:pulsoEsq}
+.ramos .v::after{animation-name:pulsoSobe2}
+.ramos::before{animation:juncao 2.4s ease-in-out infinite}
+@keyframes pulsoSobe1{0%{transform:translateY(190%)}33%,100%{transform:translateY(-110%)}}
+@keyframes pulsoDir{0%,30%{transform:translateX(-110%)}66%,100%{transform:translateX(260%)}}
+@keyframes pulsoEsq{0%,30%{transform:translateX(260%)}66%,100%{transform:translateX(-110%)}}
+@keyframes pulsoSobe2{0%,63%{transform:translateY(190%)}100%{transform:translateY(-110%)}}
+@keyframes juncao{0%,55%,85%,100%{box-shadow:0 0 0 0 rgba(0,149,217,0)}66%{box-shadow:0 0 0 8px rgba(0,149,217,.35);background:#fff}}
+@media (prefers-reduced-motion:reduce){.ramos span::after,.ramos::before{animation:none;display:none}}
 
 /* termômetro de contingência */
 .termo{--bw:58px;--th:30px;display:flex;align-items:center;max-width:980px;margin:18px auto 0}
@@ -704,7 +725,7 @@ function renderRegs(all){
       <div class="reg-abr"><span class="t abr-t">Ocorrências por abrangência</span>${lista.map(([k,v])=>`<div class="ab"><span>${esc(k)}</span><span class="track"><span style="width:${v/mx*100}%"></span></span><b class="num">${fmtN(v)}</b></div>`).join("")||'<span class="small">Sem ocorrências</span>'}</div>
     </button>`});
   $("regs").innerHTML=`<div class="reg-topo">${cards[0]}</div>
-    <div class="ramos" aria-hidden="true"><span class="v"></span><span class="h"></span><span class="e"></span><span class="d"></span></div>
+    <div class="ramos" aria-hidden="true"><span class="v"></span><span class="hl"></span><span class="hr"></span><span class="e"></span><span class="d"></span></div>
     <div class="reg-filhos">${cards[1]}${cards[2]}</div>`;
 }
 
