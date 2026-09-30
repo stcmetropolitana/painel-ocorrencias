@@ -9,22 +9,27 @@
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#E6ECEA; --panel:#F6F8F7; --panel2:#EEF2F0; --ink:#15232B; --muted:#586970; --line:#C9D3D0;
-  --brand:#0C3B66;
-  --atrib:#B97D08; --desl:#2C68A8; --prep:#6E54AD; --trab:#2A8453; --urg:#BF3524; --warn:#B97D08;
-  --shadow:0 1px 0 rgba(21,35,43,.06);
+  /* ===== CORES DA MARCA — ajuste aqui se tiver os códigos oficiais do manual ===== */
+  --marca:#00338D;      /* azul principal (cabeçalho, destaques) */
+  --marca-2:#0095D9;    /* azul claro de apoio */
+  --marca-txt:#FFFFFF;  /* texto sobre o azul */
+  /* ============================================================================ */
+  --bg:#EEF2F8; --panel:#FFFFFF; --panel2:#F1F5FB; --ink:#0E1E3A; --muted:#566783; --line:#D3DCEA;
+  --brand:var(--marca);
+  --atrib:#D08C00; --desl:#0095D9; --prep:#6A55C8; --trab:#1E9A57; --urg:#D1332B; --warn:#C98500;
+  --shadow:0 1px 2px rgba(0,51,141,.06);
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#101A1F; --panel:#172329; --panel2:#1D2B32; --ink:#E4ECEA; --muted:#93A5A9; --line:#2C3D44;
-    --brand:#8FC0EE; --atrib:#E0A93A; --desl:#6EA6E6; --prep:#A68CE8; --trab:#5CC08A; --urg:#F07463; --warn:#E0A93A;
+    --bg:#081530; --panel:#0F2146; --panel2:#152B57; --ink:#E6EDF8; --muted:#9DB0CF; --line:#23386A;
+    --brand:#7FC4F0; --atrib:#F0B53C; --desl:#4DB8F0; --prep:#A594F0; --trab:#4FCB87; --urg:#FF7468; --warn:#F0B53C;
   }
 }
 :root[data-theme="dark"]{
-  --bg:#101A1F; --panel:#172329; --panel2:#1D2B32; --ink:#E4ECEA; --muted:#93A5A9; --line:#2C3D44;
-  --brand:#8FC0EE; --atrib:#E0A93A; --desl:#6EA6E6; --prep:#A68CE8; --trab:#5CC08A; --urg:#F07463; --warn:#E0A93A;
+  --bg:#081530; --panel:#0F2146; --panel2:#152B57; --ink:#E6EDF8; --muted:#9DB0CF; --line:#23386A;
+  --brand:#7FC4F0; --atrib:#F0B53C; --desl:#4DB8F0; --prep:#A594F0; --trab:#4FCB87; --urg:#FF7468; --warn:#F0B53C;
 }
 *,*::before,*::after{box-sizing:inherit}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
@@ -35,17 +40,27 @@ button,input,select{font:inherit;color:inherit}
 .num{font-stretch:75%;font-variant-numeric:tabular-nums}
 
 /* header */
-header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px;padding-bottom:16px;border-bottom:2px solid var(--ink)}
+header.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 24px;padding:18px clamp(16px,2.4vw,28px);background:var(--marca);color:var(--marca-txt);border-radius:10px;border-bottom:5px solid var(--marca-2)}
+.brandline{display:flex;align-items:center;gap:16px;min-width:0}
+.logo{height:40px;width:auto;display:block}
+.logo[hidden]{display:none}
 h1{margin:0;font-size:clamp(22px,3vw,30px);font-weight:750;font-stretch:88%;letter-spacing:-.01em;line-height:1.1}
 .sub{color:var(--muted);margin-top:4px;font-size:14px}
+header.top .sub{color:var(--marca-txt);opacity:.82}
 .status{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .fresh{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted)}
+header.top .fresh{color:var(--marca-txt);opacity:.92}
+header.top .fresh.stale b{color:#FFD166}
+header.top .dot{background:#5BE08F;box-shadow:0 0 0 3px rgba(255,255,255,.18)}
+header.top .fresh.stale .dot{background:#FFD166}
 .dot{width:10px;height:10px;border-radius:50%;background:var(--trab);flex:none}
 .fresh.stale .dot{background:var(--warn)}
 .fresh.stale b{color:var(--warn)}
-.btn{border:1.5px solid var(--ink);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:6px;font-weight:650;cursor:pointer;white-space:nowrap}
+.btn{border:1.5px solid var(--marca);background:var(--marca);color:#fff;padding:8px 14px;border-radius:6px;font-weight:650;cursor:pointer;white-space:nowrap}
 .btn:hover{opacity:.9}
 .btn.ghost{background:transparent;color:var(--ink)}
+header.top .btn{background:#fff;color:var(--marca);border-color:#fff}
+header.top .linkish{color:var(--marca-txt)}
 .btn[hidden]{display:none}
 .note{font-size:13px;color:var(--muted)}
 .msg{margin-top:12px;padding:10px 14px;border-radius:6px;border-left:4px solid var(--urg);background:var(--panel);font-size:14px}
@@ -55,7 +70,7 @@ h1{margin:0;font-size:clamp(22px,3vw,30px);font-weight:750;font-stretch:88%;lett
 /* pipeline — the signature element */
 .flow{margin:22px 0 8px}
 .flow-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:8px}
-.flow-head h2{margin:0;font-size:15px;font-weight:650}
+.flow-head h2{margin:0;font-size:15px;font-weight:680;color:var(--brand)}
 .bar{display:flex;min-height:92px;gap:3px}
 .seg{position:relative;border:none;text-align:left;cursor:pointer;padding:10px 12px;color:#fff;min-width:88px;display:flex;flex-direction:column;justify-content:space-between;transition:filter .15s}
 .seg:first-child{border-radius:8px 0 0 8px}.seg:last-child{border-radius:0 8px 8px 0}
@@ -86,7 +101,7 @@ h1{margin:0;font-size:clamp(22px,3vw,30px);font-weight:750;font-stretch:88%;lett
 .grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:24px;align-items:start}
 @media (max-width:1060px){.grid{grid-template-columns:minmax(0,1fr)}}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow)}
-.panel h3{margin:0;font-size:15px;font-weight:680}
+.panel h3{margin:0;font-size:15px;font-weight:680;color:var(--brand)}
 .ph{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:12px 14px 8px}
 
 /* alerts */
@@ -96,7 +111,7 @@ h1{margin:0;font-size:clamp(22px,3vw,30px);font-weight:750;font-stretch:88%;lett
 .alert .t{font-size:13.5px;line-height:1.3}
 .alert.w{border-left-color:var(--warn)}
 .alert.zero{border-left-color:var(--line);opacity:.6;cursor:default}
-.alert.on{background:var(--panel2);outline:2px solid var(--ink)}
+.alert.on{background:var(--panel2);outline:2px solid var(--brand)}
 
 /* filters */
 .filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line)}
@@ -109,7 +124,7 @@ h1{margin:0;font-size:clamp(22px,3vw,30px);font-weight:750;font-stretch:88%;lett
 /* table */
 .tbl-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:14px}
-th{position:sticky;top:0;background:var(--panel2);text-align:left;font-weight:620;font-size:12.5px;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap;cursor:pointer;user-select:none}
+th{position:sticky;top:0;background:var(--panel2);border-top:none;text-align:left;font-weight:620;font-size:12.5px;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap;cursor:pointer;user-select:none}
 th[aria-sort="ascending"]::after{content:" ▲"}th[aria-sort="descending"]::after{content:" ▼"}
 td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
 tr.r{cursor:pointer}
@@ -149,18 +164,38 @@ tr.r.open td{background:var(--panel2)}
 .drop.show{display:flex}
 
 /* nível de contingência — em construção */
-.cont{margin:22px 0 4px;border:1.5px dashed var(--line);border-radius:10px;padding:22px clamp(16px,3vw,32px);background:var(--panel);text-align:center}
+.cont{margin:18px 0 4px;border:1.5px dashed var(--marca-2);border-radius:10px;padding:22px clamp(16px,3vw,32px);background:var(--panel);text-align:center}
 .cont-t{margin:0;font-size:clamp(28px,5vw,52px);font-weight:780;font-stretch:80%;line-height:1.05;letter-spacing:-.01em}
-.cont-t span{color:var(--brand)}
+.cont-t span{color:var(--marca-2)}
 .cont-t{animation:blink 1.4s ease-in-out infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
 .wip{display:inline-flex;align-items:center;gap:10px;margin-top:10px;font-size:clamp(18px,2.4vw,24px);font-weight:680;color:var(--warn)}
 .wip i{width:12px;height:12px;border-radius:50%;background:var(--warn);animation:pulse 1.6s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
 @media (prefers-reduced-motion:reduce){.wip i,.cont-t{animation:none}}
-.login{position:fixed;inset:0;z-index:60;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px}
+/* termômetro de contingência */
+.termo{--bw:58px;--th:30px;display:flex;align-items:center;max-width:980px;margin:18px auto 0}
+.bulbo{width:var(--bw);height:var(--bw);border-radius:50%;background:var(--panel);border:4px solid var(--marca);flex:none;display:grid;place-items:center;position:relative;z-index:2;margin-right:-10px}
+.bulbo i{width:calc(var(--bw) - 20px);height:calc(var(--bw) - 20px);border-radius:50%;background:#1E9A57}
+.tubo{position:relative;flex:1;height:var(--th);border:4px solid var(--marca);border-left:none;border-radius:0 999px 999px 0;background:var(--panel);overflow:hidden}
+.zonas{position:absolute;inset:0;display:grid;grid-template-columns:repeat(4,1fr)}
+.zonas span{opacity:.16}
+.zonas span+span{border-left:2px dashed color-mix(in srgb,var(--marca) 45%,transparent)}
+.z1{background:#1E9A57}.z2{background:#E5B400}.z3{background:#E86A1A}.z4{background:#D1332B}
+.mercurio{position:absolute;inset:4px 4px 4px 0;border-radius:0 999px 999px 0;
+  background:linear-gradient(90deg,#1E9A57 0%,#1E9A57 20%,#E5B400 37%,#E5B400 45%,#E86A1A 62%,#E86A1A 70%,#D1332B 87%,#D1332B 100%);
+  clip-path:inset(0 88% 0 0 round 0 999px 999px 0);animation:subir 9s ease-in-out infinite alternate}
+@keyframes subir{0%{clip-path:inset(0 88% 0 0 round 0 999px 999px 0)}100%{clip-path:inset(0 4% 0 0 round 0 999px 999px 0)}}
+.termo-niveis{display:grid;grid-template-columns:repeat(4,1fr);max-width:980px;margin:8px auto 0;padding-left:48px;font-size:14px;font-weight:680;text-align:center}
+.n1{color:#1E9A57}.n2{color:#B98F00}.n3{color:#D65E12}.n4{color:#D1332B}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .n2{color:#E5B400}:root:not([data-theme="light"]) .n3{color:#F07A2E}:root:not([data-theme="light"]) .n4{color:#FF7468}}
+:root[data-theme="dark"] .n2{color:#E5B400}:root[data-theme="dark"] .n3{color:#F07A2E}:root[data-theme="dark"] .n4{color:#FF7468}
+@media (max-width:640px){.termo{--bw:44px;--th:24px}.termo-niveis{padding-left:34px;font-size:12px}}
+@media (prefers-reduced-motion:reduce){.mercurio{animation:none;clip-path:inset(0 50% 0 0 round 0 999px 999px 0)}}
+
+.login{position:fixed;inset:0;z-index:60;background:var(--marca);display:flex;align-items:center;justify-content:center;padding:20px}
 .login[hidden]{display:none}
-.login-box{width:100%;max-width:360px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:24px;display:flex;flex-direction:column;gap:12px}
+.login-box{width:100%;max-width:380px;background:var(--panel);border:none;border-top:5px solid var(--marca-2);border-radius:10px;box-shadow:0 20px 50px rgba(0,0,0,.25);padding:24px;display:flex;flex-direction:column;gap:12px}
 .login-box h2{margin:0;font-size:22px;font-stretch:88%}
 .login-box p{margin:0;color:var(--muted);font-size:14px}
 .login-box input{padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:var(--bg)}
@@ -182,8 +217,8 @@ tr.r.open td{background:var(--panel2)}
    url   = Project URL (ex.: https://abcdxyz.supabase.co)
    chave = chave pública (anon ou publishable). NUNCA use a service_role aqui. */
 window.PAINEL_CONFIG = {
-  url:   "https://bjzvbjimrniooskmnieq.supabase.co/",
-  chave: "sb_publishable_CbJxIKHCnLXy-mWd9H9y4g_v0fVoEHO"
+  url:   "https://bjzvbjimrniooskmnieq.supabase.co",
+  chave: "COLE_AQUI_A_CHAVE_ANON"
 };
 </script>
 </head>
@@ -200,9 +235,12 @@ window.PAINEL_CONFIG = {
 <div class="drop" id="drop">Solte o arquivo XML para atualizar a base</div>
 <div class="wrap">
   <header class="top">
-    <div>
+    <div class="brandline">
+      <img class="logo" src="logo.png" alt="Equatorial" onerror="this.hidden=true">
+      <div>
       <h1>Ocorrências em andamento</h1>
       <div class="sub" id="sub">Equatorial Goiás · aguardando base</div>
+      </div>
     </div>
     <div class="status">
       <div class="fresh" id="fresh"><span class="dot"></span><span id="freshTxt">Sem base carregada</span></div>
@@ -215,6 +253,16 @@ window.PAINEL_CONFIG = {
 
   <section class="cont" aria-label="Nível de contingência STC Centro, em construção">
     <h2 class="cont-t">Nível de contingência <span>STC Centro</span></h2>
+    <div class="termo" aria-hidden="true">
+      <div class="bulbo"><i></i></div>
+      <div class="tubo">
+        <div class="zonas"><span class="z1"></span><span class="z2"></span><span class="z3"></span><span class="z4"></span></div>
+        <div class="mercurio"></div>
+      </div>
+    </div>
+    <div class="termo-niveis" aria-hidden="true">
+      <span class="n1">Nível 1</span><span class="n2">Nível 2</span><span class="n3">Nível 3</span><span class="n4">Nível 4</span>
+    </div>
     <div class="wip"><i></i>Em construção</div>
   </section>
 
@@ -453,12 +501,12 @@ function renderSpark(){
   const line=k=>h.map((p,i)=>(i?"L":"M")+x(i).toFixed(1)+" "+y(p[k]||0).toFixed(1)).join(" ");
   const last=h[h.length-1];
   $("spark").innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Total de ocorrências nas últimas ${h.length} atualizações">
-    <path d="${line("total")}" fill="none" stroke="var(--ink)" stroke-width="2"/>
+    <path d="${line("total")}" fill="none" stroke="var(--brand)" stroke-width="2"/>
     <path d="${line("urg")}" fill="none" stroke="var(--urg)" stroke-width="1.5" stroke-dasharray="4 3"/>
-    <circle cx="${x(h.length-1)}" cy="${y(last.total)}" r="3.5" fill="var(--ink)"/>
+    <circle cx="${x(h.length-1)}" cy="${y(last.total)}" r="3.5" fill="var(--brand)"/>
     <text x="${P}" y="${H-3}" font-size="10" fill="var(--muted)">${esc(fmtHora(h[0].t))}</text>
     <text x="${W-P}" y="${H-3}" font-size="10" fill="var(--muted)" text-anchor="end">${esc(fmtHora(last.t))}</text>
-  </svg><div class="legend" style="padding:6px 0 0"><span class="pill"><i style="background:var(--ink)"></i>Total (${last.total})</span><span class="pill"><i style="background:var(--urg)"></i>Urgentes (${last.urg})</span></div>`;
+  </svg><div class="legend" style="padding:6px 0 0"><span class="pill"><i style="background:var(--brand)"></i>Total (${last.total})</span><span class="pill"><i style="background:var(--urg)"></i>Urgentes (${last.urg})</span></div>`;
 }
 function renderFresh(){
   const d=S.data,el=$("fresh");
@@ -472,7 +520,7 @@ function renderFresh(){
 /* ---------- data flow ---------- */
 const CFG=window.PAINEL_CONFIG||{};
 const BASE=String(CFG.url||"").replace(/\/+$/,"");
-const CONFIG_OK=/^https:\/\/[^\s]+$/.test(BASE)&&String(CFG.chave||"").length>20;
+const CONFIG_OK=/^https:\/\/[^\s]+$/.test(BASE)&&String(CFG.chave||"").length>20&&!/COLE_AQUI/.test(BASE+CFG.chave);
 async function rpc(fn,body){
   const r=await fetch(BASE+"/rest/v1/rpc/"+fn,{method:"POST",headers:{"apikey":CFG.chave,"Content-Type":"application/json"},body:JSON.stringify(body)});
   const txt=await r.text();let j=null;try{j=txt?JSON.parse(txt):null}catch(e){}
