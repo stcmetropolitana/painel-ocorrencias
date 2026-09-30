@@ -40,27 +40,27 @@ button,input,select{font:inherit;color:inherit}
 .num{font-stretch:75%;font-variant-numeric:tabular-nums}
 
 /* header */
-header.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 24px;padding:18px clamp(16px,2.4vw,28px);background:var(--marca);color:var(--marca-txt);border-radius:10px;border-bottom:5px solid var(--marca-2)}
+.top{margin-top:24px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 24px;padding:18px clamp(16px,2.4vw,28px);background:var(--marca);color:var(--marca-txt);border-radius:10px;border-bottom:5px solid var(--marca-2)}
 .brandline{display:flex;align-items:center;gap:16px;min-width:0}
 .logo{height:40px;width:auto;display:block}
 .logo[hidden]{display:none}
 h1{margin:0;font-size:clamp(22px,3vw,30px);font-weight:750;font-stretch:88%;letter-spacing:-.01em;line-height:1.1}
 .sub{color:var(--muted);margin-top:4px;font-size:14px}
-header.top .sub{color:var(--marca-txt);opacity:.82}
+.top .sub{color:var(--marca-txt);opacity:.82}
 .status{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .fresh{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted)}
-header.top .fresh{color:var(--marca-txt);opacity:.92}
-header.top .fresh.stale b{color:#FFD166}
-header.top .dot{background:#5BE08F;box-shadow:0 0 0 3px rgba(255,255,255,.18)}
-header.top .fresh.stale .dot{background:#FFD166}
+.top .fresh{color:var(--marca-txt);opacity:.92}
+.top .fresh.stale b{color:#FFD166}
+.top .dot{background:#5BE08F;box-shadow:0 0 0 3px rgba(255,255,255,.18)}
+.top .fresh.stale .dot{background:#FFD166}
 .dot{width:10px;height:10px;border-radius:50%;background:var(--trab);flex:none}
 .fresh.stale .dot{background:var(--warn)}
 .fresh.stale b{color:var(--warn)}
 .btn{border:1.5px solid var(--marca);background:var(--marca);color:#fff;padding:8px 14px;border-radius:6px;font-weight:650;cursor:pointer;white-space:nowrap}
 .btn:hover{opacity:.9}
 .btn.ghost{background:transparent;color:var(--ink)}
-header.top .btn{background:#fff;color:var(--marca);border-color:#fff}
-header.top .linkish{color:var(--marca-txt)}
+.top .btn{background:#fff;color:var(--marca);border-color:#fff}
+.top .linkish{color:var(--marca-txt)}
 .btn[hidden]{display:none}
 .note{font-size:13px;color:var(--muted)}
 .msg{margin-top:12px;padding:10px 14px;border-radius:6px;border-left:4px solid var(--urg);background:var(--panel);font-size:14px}
@@ -122,7 +122,7 @@ header.top .linkish{color:var(--marca-txt)}
 .linkish{background:none;border:none;color:var(--brand);cursor:pointer;padding:0;text-decoration:underline;font-size:13px}
 
 /* table */
-.tbl-wrap{overflow-x:auto}
+.tbl-wrap{overflow:auto;max-height:70vh}
 table{width:100%;border-collapse:collapse;font-size:14px}
 th{position:sticky;top:0;background:var(--panel2);border-top:none;text-align:left;font-weight:620;font-size:12.5px;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap;cursor:pointer;user-select:none}
 th[aria-sort="ascending"]::after{content:" ▲"}th[aria-sort="descending"]::after{content:" ▼"}
@@ -175,7 +175,8 @@ tr.r.open td{background:var(--panel2)}
 @media (prefers-reduced-motion:reduce){.wip i,.cont-t{animation:none}}
 
 /* visão por regional */
-.regs{margin:22px 0 4px}
+.regs{margin:0 0 22px}
+.regs[hidden]{display:none}
 .reg-topo{display:flex;justify-content:center}
 .reg-topo .reg{width:min(100%,640px)}
 .ramos{position:relative;height:40px;margin:0 auto}
@@ -280,29 +281,14 @@ tr.r.open td{background:var(--panel2)}
 </div>
 <div class="drop" id="drop">Solte o arquivo XML para atualizar a base</div>
 <div class="wrap">
-  <header class="top">
-    <div class="brandline">
-      <img class="logo" src="logo.png" alt="Equatorial" onerror="this.hidden=true">
-      <div>
-      <h1>Ocorrências em andamento</h1>
-      <div class="sub" id="sub">Equatorial Goiás · aguardando base</div>
-      </div>
-    </div>
-    <div class="status">
-      <div class="fresh" id="fresh"><span class="dot"></span><span id="freshTxt">Sem base carregada</span></div>
-      <button class="btn" id="upBtn" type="button">Atualizar base (XML)</button>
-      <button class="linkish" id="sair" type="button" hidden>Sair</button>
-      <input type="file" id="file" accept=".xml,text/xml,application/xml" hidden>
-    </div>
-  </header>
-  <div class="msg" id="msg" role="status" hidden></div>
+  <section class="regs" id="regsSec" hidden aria-label="Visão por regional">
+    <div class="flow-head"><h2>Nível de contingência e visão por regional</h2><span class="note">Clique numa regional para filtrar o painel</span></div>
+    <div id="regs"></div>
+  </section>
+
 
 
   <main id="main" hidden>
-    <section class="regs" aria-label="Visão por regional">
-      <div class="flow-head"><h2>Nível de contingência e visão por regional</h2><span class="note">Clique numa regional para filtrar o painel</span></div>
-      <div id="regs"></div>
-    </section>
 
     <section class="flow" aria-label="Ocorrências por situação">
       <div class="flow-head"><h2>Onde estão as ocorrências agora</h2><span class="note">Clique numa etapa para filtrar</span></div>
@@ -357,6 +343,22 @@ tr.r.open td{background:var(--panel2)}
     <p style="font-size:17px;color:var(--ink);font-weight:600;margin:0 0 6px">Nenhuma base carregada ainda</p>
     <p style="margin:0">Use “Atualizar base (XML)” ou arraste o arquivo exportado para esta página.</p>
   </div>
+  <div class="msg" id="msg" role="status" hidden></div>
+  <footer class="top">
+    <div class="brandline">
+      <img class="logo" src="logo.png" alt="Equatorial" onerror="this.hidden=true">
+      <div>
+      <h1>Ocorrências em andamento</h1>
+      <div class="sub" id="sub">Equatorial Goiás · aguardando base</div>
+      </div>
+    </div>
+    <div class="status">
+      <div class="fresh" id="fresh"><span class="dot"></span><span id="freshTxt">Sem base carregada</span></div>
+      <button class="btn" id="upBtn" type="button">Atualizar base (XML)</button>
+      <button class="linkish" id="sair" type="button" hidden>Sair</button>
+      <input type="file" id="file" accept=".xml,text/xml,application/xml" hidden>
+    </div>
+  </footer>
 </div>
 
 <script>
@@ -442,7 +444,7 @@ function applyFilters(all,skip){
 /* ---------- render ---------- */
 function render(){
   const d=S.data;
-  $("main").hidden=!d; $("emptyAll").hidden=!!d;
+  $("main").hidden=!d; $("emptyAll").hidden=!!d; $("regsSec").hidden=!d;
   renderFresh();
   if(!d)return;
   const all=rowsFromData(d);
