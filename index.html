@@ -266,13 +266,14 @@ tr.r.open td{background:var(--panel2)}
 /* termômetro de uma bola só: o mercúrio anda até a situação atual e a bola fica na ponta */
 .termo.mini.sem-bulbo .tubo{border-left:3px solid var(--marca);border-radius:999px}
 .reg.total .termo.mini.sem-bulbo .tubo{border-color:#fff}
-.termo.mini.sem-bulbo .mercurio{inset:3px;border-radius:999px;animation:encher 1.6s ease-out both}
-.termo.mini.sem-bulbo .ponteiro{animation:andar 1.6s ease-out both}
-.termo.mini.sem-bulbo .ponteiro.pisca{animation:andar 1.6s ease-out both,ponteiro 1.4s ease-in-out 1.6s infinite}
-.termo.mini.sem-bulbo .ponteiro.p3{animation:andar 1.6s ease-out both,ponteiro 1s ease-in-out 1.6s infinite}
-.termo.mini.sem-bulbo .ponteiro.p4{animation:andar 1.6s ease-out both,ponteiro .6s ease-in-out 1.6s infinite}
-@keyframes encher{from{clip-path:inset(0 100% 0 0 round 999px)}}
-@keyframes andar{from{left:0}}
+.termo.mini.sem-bulbo .mercurio{inset:3px;border-radius:999px;animation:encher 3.2s ease-in-out infinite}
+.termo.mini.sem-bulbo .ponteiro{animation:andar 3.2s ease-in-out infinite}
+.termo.mini.sem-bulbo .ponteiro.pisca{animation:andar 3.2s ease-in-out infinite,ponteiro 1.4s ease-in-out infinite}
+.termo.mini.sem-bulbo .ponteiro.p3{animation:andar 3.2s ease-in-out infinite,ponteiro 1s ease-in-out infinite}
+.termo.mini.sem-bulbo .ponteiro.p4{animation:andar 3.2s ease-in-out infinite,ponteiro .6s ease-in-out infinite}
+/* sobe do zero até o nível atual, segura um instante no ponto e recomeça */
+@keyframes encher{0%{clip-path:inset(0 100% 0 0 round 999px)}65%,100%{clip-path:inset(0 calc(100% - var(--fill)) 0 0 round 999px)}}
+@keyframes andar{0%{left:0}65%,100%{left:var(--fill)}}
 .termo-niveis.mini{padding-left:0}
 @media (prefers-reduced-motion:reduce){.termo.mini.sem-bulbo .mercurio,.termo.mini.sem-bulbo .ponteiro,.termo.mini.sem-bulbo .ponteiro.pisca{animation:none}}
 
@@ -296,6 +297,12 @@ tr.r.open td{background:var(--panel2)}
 @keyframes pulsoSobe2{0%,63%{transform:translateY(190%)}100%{transform:translateY(-110%)}}
 @keyframes juncao{0%,55%,85%,100%{box-shadow:0 0 0 0 rgba(0,149,217,0)}66%{box-shadow:0 0 0 8px rgba(0,149,217,.35);background:#fff}}
 @media (prefers-reduced-motion:reduce){.ramos span::after,.ramos::before{animation:none;display:none}}
+
+
+/* títulos dos cards centralizados e maiores */
+.reg h3{text-align:center;font-size:clamp(22px,2.2vw,28px);font-weight:800;letter-spacing:-.01em}
+.reg.total h3{font-size:clamp(26px,2.6vw,34px)}
+.reg .sub2{text-align:center}
 
 /* termômetro de contingência */
 .termo{--bw:58px;--th:30px;display:flex;align-items:center;max-width:980px;margin:18px auto 0}
@@ -681,8 +688,8 @@ function termoHTML(r,titulo,motivo){
   return `<div class="mini-termo">
     <div class="mt-top"><span>${esc(titulo)}</span><span class="nv-badge" style="background:${cor};color:${n===2?"#1a1a1a":"#fff"}">Nível ${n} · ${esc(CONTINGENCIA.nomes[n])}</span></div>
     <div class="termo mini sem-bulbo" aria-hidden="true">
-      <div class="tubo-wrap"><div class="tubo"><div class="zonas"><span class="z1"></span><span class="z2"></span><span class="z3"></span><span class="z4"></span></div><div class="mercurio fixo" style="clip-path:inset(0 ${100-fill}% 0 0 round 999px)"></div></div>
-      <span class="ponteiro${n>=2?" pisca p"+n:""}" style="left:${fill}%;background:${cor}"></span></div></div>
+      <div class="tubo-wrap"><div class="tubo"><div class="zonas"><span class="z1"></span><span class="z2"></span><span class="z3"></span><span class="z4"></span></div><div class="mercurio fixo" style="--fill:${fill}%;clip-path:inset(0 ${100-fill}% 0 0 round 999px)"></div></div>
+      <span class="ponteiro${n>=2?" pisca p"+n:""}" style="--fill:${fill}%;left:${fill}%;background:${cor}"></span></div></div>
     <div class="termo-niveis mini" aria-hidden="true"><span class="n1">Nível 1</span><span class="n2">Nível 2</span><span class="n3">Nível 3</span><span class="n4">Nível 4</span></div>
     <div class="mt-motivo">${motivo}</div>
     ${chips?`<div class="inds">${chips}</div>`:""}
