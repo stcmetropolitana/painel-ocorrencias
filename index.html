@@ -724,15 +724,16 @@ function renderFresh(){
 const CONTINGENCIA={
   indicadores:[
     {id:"oc",   nome:"Ocorrências",
-      limites:{"Goiânia":[101,151,251],   "Metropolitana":[80,150,250]}},
+      limites:{"Goiânia":[101,151,251],   "Metropolitana":[101,151,202]}},
     {id:"cli",  nome:"Clientes afetados",
-      limites:{"Goiânia":[1001,1500,4001],"Metropolitana":[801,1500,5000]}},
+      limites:{"Goiânia":[1001,1500,4001],"Metropolitana":[1001,1501,3501]}},
     {id:"rede", nome:"Transformador, chave ou MT", curto:"Transf., chave ou MT",
-      limites:{"Goiânia":[11,16,21],      "Metropolitana":[29,45,60]}}
+      limites:{"Goiânia":[11,16,21],      "Metropolitana":[31,51,71]}}
   ],
   /* Goiânia (definido pela operação): Nível 1 até 100 ocorr. / 1.000 clientes / 10 transf.;
      Nível 2 até 150 / 1.499 / 15; Nível 3 até 250 / 4.000 / 20; Nível 4 acima disso.
-     Metropolitana: limites provisórios, aguardando definição. */
+     Metropolitana (definido pela operação): Nível 1 até 100 / 1.000 / 30; Nível 2 até 150 / 1.500 / 50;
+     Nível 3 até 201 / 3.500 / 70; Nível 4 acima disso. */
   nomes:["","Normal","Atenção","Alerta","Crise"],
   minIndicadores:2,                  // só muda de nível se pelo menos 2 indicadores estiverem acima do limite daquele nível
   desceAposDuasAtualizacoes:true     // sobe na hora; só desce se a atualização anterior também estava abaixo
