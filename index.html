@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ocorrências em andamento · Equatorial Goiás</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E6ECEA; --panel:#F6F8F7; --panel2:#EEF2F0; --ink:#15232B; --muted:#586970; --line:#C9D3D0;
+  --brand:#0C3B66;
+  --atrib:#B97D08; --desl:#2C68A8; --prep:#6E54AD; --trab:#2A8453; --urg:#BF3524; --warn:#B97D08;
+  --shadow:0 1px 0 rgba(21,35,43,.06);
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#101A1F; --panel:#172329; --panel2:#1D2B32; --ink:#E4ECEA; --muted:#93A5A9; --line:#2C3D44;
+    --brand:#8FC0EE; --atrib:#E0A93A; --desl:#6EA6E6; --prep:#A68CE8; --trab:#5CC08A; --urg:#F07463; --warn:#E0A93A;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101A1F; --panel:#172329; --panel2:#1D2B32; --ink:#E4ECEA; --muted:#93A5A9; --line:#2C3D44;
+  --brand:#8FC0EE; --atrib:#E0A93A; --desl:#6EA6E6; --prep:#A68CE8; --trab:#5CC08A; --urg:#F07463; --warn:#E0A93A;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Archivo",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.wrap{max-width:1440px;margin:0 auto;padding:20px clamp(12px,3vw,32px) 40px}
+.num{font-stretch:75%;font-variant-numeric:tabular-nums}
+
+/* header */
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px;padding-bottom:16px;border-bottom:2px solid var(--ink)}
+h1{margin:0;font-size:clamp(22px,3vw,30px);font-weight:750;font-stretch:88%;letter-spacing:-.01em;line-height:1.1}
+.sub{color:var(--muted);margin-top:4px;font-size:14px}
+.status{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.fresh{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted)}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--trab);flex:none}
+.fresh.stale .dot{background:var(--warn)}
+.fresh.stale b{color:var(--warn)}
+.btn{border:1.5px solid var(--ink);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:6px;font-weight:650;cursor:pointer;white-space:nowrap}
+.btn:hover{opacity:.9}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn[hidden]{display:none}
+.note{font-size:13px;color:var(--muted)}
+.msg{margin-top:12px;padding:10px 14px;border-radius:6px;border-left:4px solid var(--urg);background:var(--panel);font-size:14px}
+.msg.ok{border-color:var(--trab)}
+.msg[hidden]{display:none}
+
+/* pipeline — the signature element */
+.flow{margin:22px 0 8px}
+.flow-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:8px}
+.flow-head h2{margin:0;font-size:15px;font-weight:650}
+.bar{display:flex;min-height:92px;gap:3px}
+.seg{position:relative;border:none;text-align:left;cursor:pointer;padding:10px 12px;color:#fff;min-width:88px;display:flex;flex-direction:column;justify-content:space-between;transition:filter .15s}
+.seg:first-child{border-radius:8px 0 0 8px}.seg:last-child{border-radius:0 8px 8px 0}
+.seg::after{content:"";position:absolute;right:-9px;top:50%;transform:translateY(-50%);border:9px solid transparent;border-left-color:inherit;border-right:0;z-index:1}
+.seg:last-child::after{display:none}
+.seg .n{font-size:clamp(30px,4vw,44px);font-weight:750;line-height:1}
+.seg .l{font-weight:650;font-size:14px}
+.seg .m{font-size:12px;opacity:.88}
+.seg.off{filter:saturate(.25) opacity(.55)}
+.s-Atribuida{background:var(--atrib);border-color:var(--atrib);color:#fff}
+.s-Deslocamento{background:var(--desl);border-color:var(--desl)}
+.s-Preparacao{background:var(--prep);border-color:var(--prep)}
+.s-Trabalhando{background:var(--trab);border-color:var(--trab)}
+.s-Outro{background:var(--muted);border-color:var(--muted)}
+:root[data-theme="dark"] .seg, :root:not([data-theme="light"]) .seg{color:#fff}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .seg{color:#101A1F} }
+:root[data-theme="dark"] .seg{color:#101A1F}
+
+/* figures */
+.figs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0;margin:18px 0 22px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.fig{padding:12px 16px;border-left:1px solid var(--line)}
+.fig:first-child{border-left:none;padding-left:0}
+.fig .v{font-size:30px;font-weight:720;line-height:1.1}
+.fig .k{font-size:13px;color:var(--muted)}
+.fig.urg .v{color:var(--urg)}
+
+/* layout */
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:24px;align-items:start}
+@media (max-width:1060px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow)}
+.panel h3{margin:0;font-size:15px;font-weight:680}
+.ph{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:12px 14px 8px}
+
+/* alerts */
+.alerts{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-bottom:16px}
+.alert{border:1px solid var(--line);border-left:4px solid var(--urg);background:var(--panel);border-radius:6px;padding:10px 12px;text-align:left;cursor:pointer;display:flex;gap:12px;align-items:center}
+.alert .c{font-size:28px;font-weight:750;line-height:1;min-width:32px}
+.alert .t{font-size:13.5px;line-height:1.3}
+.alert.w{border-left-color:var(--warn)}
+.alert.zero{border-left-color:var(--line);opacity:.6;cursor:default}
+.alert.on{background:var(--panel2);outline:2px solid var(--ink)}
+
+/* filters */
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line)}
+.filters input[type=search]{flex:1 1 220px;min-width:0;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg)}
+.filters select{padding:8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);max-width:100%}
+.chk{display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer}
+.count{padding:8px 14px;font-size:13px;color:var(--muted);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.linkish{background:none;border:none;color:var(--brand);cursor:pointer;padding:0;text-decoration:underline;font-size:13px}
+
+/* table */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{position:sticky;top:0;background:var(--panel2);text-align:left;font-weight:620;font-size:12.5px;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap;cursor:pointer;user-select:none}
+th[aria-sort="ascending"]::after{content:" ▲"}th[aria-sort="descending"]::after{content:" ▼"}
+td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+tr.r{cursor:pointer}
+tr.r:hover td{background:var(--panel2)}
+tr.r.open td{background:var(--panel2)}
+.oe{font-weight:650;white-space:nowrap}
+.tag{display:inline-block;font-size:11.5px;font-weight:650;padding:1px 7px;border-radius:10px;white-space:nowrap;color:#fff}
+.tag.u{background:var(--urg)}
+.tag.p{background:transparent;color:var(--muted);border:1px solid var(--line)}
+.tag.cli{background:transparent;color:var(--brand);border:1px solid var(--brand)}
+.pill{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.pill i{width:9px;height:9px;border-radius:2px;display:inline-block}
+.age{display:flex;align-items:center;gap:8px;white-space:nowrap}
+.age .track{width:56px;height:6px;background:var(--line);border-radius:3px;overflow:hidden;flex:none}
+.age .fill{display:block;height:100%;background:var(--muted)}
+.age.hot .fill{background:var(--urg)}.age.hot b{color:var(--urg)}
+.age.mid .fill{background:var(--warn)}
+.small{font-size:12.5px;color:var(--muted)}
+.det td{background:var(--panel2);padding:4px 14px 14px}
+.dl{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px 18px;margin:0}
+.dl div{min-width:0}.dl dt{font-size:12px;color:var(--muted)}.dl dd{margin:0;overflow-wrap:anywhere}
+.empty{padding:40px 16px;text-align:center;color:var(--muted)}
+
+/* side */
+.side{display:flex;flex-direction:column;gap:16px}
+.hbars{padding:4px 14px 14px;display:flex;flex-direction:column;gap:7px}
+.hb{display:grid;grid-template-columns:minmax(0,1fr) 34px;gap:4px 8px;align-items:center;background:none;border:none;padding:2px 0;text-align:left;cursor:pointer;width:100%}
+.hb .nm{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hb .ct{font-size:13px;text-align:right;font-weight:650}
+.hb .stack{grid-column:1/-1;display:flex;height:8px;border-radius:2px;overflow:hidden;background:var(--line)}
+.hb .stack span{display:block;height:100%}
+.hb.on .nm{font-weight:700;text-decoration:underline}
+.legend{display:flex;flex-wrap:wrap;gap:10px;padding:0 14px 12px;font-size:12px;color:var(--muted)}
+.spark{padding:4px 14px 14px}
+.spark svg{width:100%;height:auto;display:block}
+.drop{position:fixed;inset:0;background:color-mix(in srgb,var(--bg) 88%,transparent);display:none;align-items:center;justify-content:center;z-index:50;border:4px dashed var(--brand);font-size:20px;font-weight:650}
+.drop.show{display:flex}
+
+/* nível de contingência — em construção */
+.cont{margin:22px 0 4px;border:1.5px dashed var(--line);border-radius:10px;padding:22px clamp(16px,3vw,32px);background:var(--panel);text-align:center}
+.cont-t{margin:0;font-size:clamp(28px,5vw,52px);font-weight:780;font-stretch:80%;line-height:1.05;letter-spacing:-.01em}
+.cont-t span{color:var(--brand)}
+.cont-t{animation:blink 1.4s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+.wip{display:inline-flex;align-items:center;gap:10px;margin-top:10px;font-size:clamp(18px,2.4vw,24px);font-weight:680;color:var(--warn)}
+.wip i{width:12px;height:12px;border-radius:50%;background:var(--warn);animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.wip i,.cont-t{animation:none}}
+.login{position:fixed;inset:0;z-index:60;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px}
+.login[hidden]{display:none}
+.login-box{width:100%;max-width:360px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:24px;display:flex;flex-direction:column;gap:12px}
+.login-box h2{margin:0;font-size:22px;font-stretch:88%}
+.login-box p{margin:0;color:var(--muted);font-size:14px}
+.login-box input{padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:var(--bg)}
+.login-err{color:var(--urg)!important}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (max-width:640px){
+  .fig{border-left:none;padding-left:0}
+  .bar{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+  .seg,.seg:first-child,.seg:last-child{border-radius:8px;min-height:74px}
+  .seg::after{display:none}
+  .seg .m{display:block}
+  .alerts{grid-template-columns:1fr}
+  .hide-sm{display:none}
+}
+</style>
+<script>
+/* ===== CONFIGURAÇÃO — preencha com os dados do seu projeto Supabase =====
+   Supabase > Project Settings > API:
+   url   = Project URL (ex.: https://abcdxyz.supabase.co)
+   chave = chave pública (anon ou publishable). NUNCA use a service_role aqui. */
+window.PAINEL_CONFIG = {
+  url:   "COLE_AQUI_A_PROJECT_URL",
+  chave: "COLE_AQUI_A_CHAVE_ANON"
+};
+</script>
+</head>
+<body>
+<div class="login" id="login" hidden>
+  <form class="login-box" id="loginForm">
+    <h2>Ocorrências em andamento</h2>
+    <p>Digite a senha do painel para acompanhar as ocorrências.</p>
+    <input type="password" id="senha" autocomplete="current-password" required aria-label="Senha do painel" placeholder="Senha do painel">
+    <button class="btn" type="submit" id="entrar">Entrar</button>
+    <p class="login-err" id="loginErr" role="alert" hidden></p>
+  </form>
+</div>
+<div class="drop" id="drop">Solte o arquivo XML para atualizar a base</div>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Ocorrências em andamento</h1>
+      <div class="sub" id="sub">Equatorial Goiás · aguardando base</div>
+    </div>
+    <div class="status">
+      <div class="fresh" id="fresh"><span class="dot"></span><span id="freshTxt">Sem base carregada</span></div>
+      <button class="btn" id="upBtn" type="button">Atualizar base (XML)</button>
+      <button class="linkish" id="sair" type="button" hidden>Sair</button>
+      <input type="file" id="file" accept=".xml,text/xml,application/xml" hidden>
+    </div>
+  </header>
+  <div class="msg" id="msg" role="status" hidden></div>
+
+  <section class="cont" aria-label="Nível de contingência STC Centro, em construção">
+    <h2 class="cont-t">Nível de contingência <span>STC Centro</span></h2>
+    <div class="wip"><i></i>Em construção</div>
+  </section>
+
+  <main id="main" hidden>
+    <section class="flow" aria-label="Ocorrências por situação">
+      <div class="flow-head"><h2>Onde estão as ocorrências agora</h2><span class="note">Clique numa etapa para filtrar</span></div>
+      <div class="bar" id="bar"></div>
+    </section>
+
+    <section class="figs" id="figs" aria-label="Indicadores"></section>
+
+    <div class="grid">
+      <div>
+        <div class="alerts" id="alerts"></div>
+        <section class="panel">
+          <div class="filters">
+            <input type="search" id="q" placeholder="Buscar OE, endereço, bairro, prefixo, instalação" aria-label="Buscar">
+            <select id="fMesa" aria-label="Mesa"></select>
+            <select id="fMot" aria-label="Motivo"></select>
+            <select id="fTipo" aria-label="Tipo">
+              <option value="">Emergenciais e programadas</option>
+              <option value="E">Só emergenciais</option>
+              <option value="P">Só programadas</option>
+            </select>
+            <label class="chk"><input type="checkbox" id="fUrg"> Só urgentes</label>
+          </div>
+          <div class="count"><span id="cnt"></span><button class="linkish" id="clr" type="button" hidden>Limpar filtros</button></div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr id="thr"></tr></thead>
+              <tbody id="tb"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+      <aside class="side">
+        <section class="panel">
+          <div class="ph"><h3>Por base de atendimento</h3><span class="note" id="pontoN"></span></div>
+          <div class="hbars" id="pontos"></div>
+          <div class="legend" id="leg"></div>
+        </section>
+        <section class="panel">
+          <div class="ph"><h3>Por motivo</h3></div>
+          <div class="hbars" id="motivos"></div>
+        </section>
+        <section class="panel">
+          <div class="ph"><h3>Evolução nas últimas atualizações</h3></div>
+          <div class="spark" id="spark"></div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <div class="empty" id="emptyAll">
+    <p style="font-size:17px;color:var(--ink);font-weight:600;margin:0 0 6px">Nenhuma base carregada ainda</p>
+    <p style="margin:0">Use “Atualizar base (XML)” ou arraste o arquivo exportado para esta página.</p>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+const SS="urn:schemas-microsoft-com:office:spreadsheet";
+const SITS=["Atribuida","Deslocamento","Preparacao","Trabalhando"];
+const SIT_LABEL={Atribuida:"Atribuída",Deslocamento:"Deslocamento",Preparacao:"Preparação",Trabalhando:"Trabalhando"};
+const SIT_VAR={Atribuida:"--atrib",Deslocamento:"--desl",Preparacao:"--prep",Trabalhando:"--trab"};
+const FIELDS={oe:["oe"],prefixo:["prefixo"],sit:["situacao"],defs:["defeitos"],ucs:["ucs"],mun:["municipio"],tempo:["tempo"],se:["se"],al:["al"],end:["endereco"],mot:["motivo"],ponto:["ponto"],inst:["instalacaodefeito","defeito"],trat:["tratamento"],nrs:["nrs"],bairro:["bairro"],mesa:["mesa"],abr:["abrangencia"],dh:["datahora"],crit:["criticidade"],reinc:["reincidencia"],rech:["rechamadas"],vip:["nivelvip"],cli:["tipodecliente"],ret:["equiperetirada"],aneel:["abrangenciaaneel"],oeref:["oeref"],prio:["prioridade"]};
+const NUMS=new Set(["ucs","nrs","reinc","rech","vip","ret","prio"]);
+const KEYS=Object.keys(FIELDS);
+
+const $=id=>document.getElementById(id);
+const norm=s=>String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]/g,"");
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const title=s=>String(s||"").toLowerCase().replace(/(^|[\s\-\/(])([a-zà-ú])/g,(m,a,b)=>a+b.toUpperCase());
+
+function tempoMin(t){const m=/(\d+)\.(\d+):(\d+)/.exec(t||"");return m?(+m[1])*1440+(+m[2])*60+(+m[3]):null}
+function fmtDur(min){if(min==null||isNaN(min))return"–";min=Math.max(0,Math.round(min));if(min<60)return min+" min";const h=Math.floor(min/60),m=min%60;if(h<24)return h+"h"+String(m).padStart(2,"0");const d=Math.floor(h/24);return d+"d "+(h%24)+"h"}
+function fmtHora(iso){if(!iso)return"–";const d=new Date(iso);if(isNaN(d))return iso;return d.toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}
+const fmtN=n=>Number(n||0).toLocaleString("pt-BR");
+
+/* ---------- parse SpreadsheetML 2003 ---------- */
+function parseXML(text,fileName){
+  const doc=new DOMParser().parseFromString(text,"application/xml");
+  if(doc.getElementsByTagName("parsererror").length) throw new Error("O arquivo não é um XML válido. Exporte novamente do sistema e tente outra vez.");
+  let rowsEl=[...doc.getElementsByTagNameNS(SS,"Row")];
+  if(!rowsEl.length) throw new Error("Não encontrei linhas de planilha no arquivo. Confira se é a exportação de ocorrências em XML.");
+  const grid=rowsEl.map(r=>{const out=[];for(const c of r.children){if(c.localName!=="Cell")continue;const ix=c.getAttributeNS(SS,"Index");if(ix)while(out.length<+ix-1)out.push(null);const d=[...c.children].find(x=>x.localName==="Data");out.push(d?d.textContent:null)}return out});
+  const head=grid[0].map(norm);
+  const idx={};
+  for(const k of KEYS){for(const alias of FIELDS[k]){const i=head.indexOf(alias);if(i>=0){idx[k]=i;break}}}
+  if(idx.oe==null||idx.sit==null) throw new Error("O arquivo não tem as colunas OE e Situação. Confira se é a exportação de ocorrências.");
+  const rows=[];let ref="";
+  for(const r of grid.slice(1)){
+    if(!r.some(v=>v!=null&&String(v).trim()!==""))continue;
+    const row=KEYS.map(k=>{let v=idx[k]==null?null:r[idx[k]];if(v==null)return null;v=String(v).trim();if(k==="tempo")return tempoMin(v);if(NUMS.has(k)){const n=parseFloat(v.replace(",","."));return isNaN(n)?null:n}return v===""?null:v});
+    const dh=row[KEYS.indexOf("dh")];if(dh&&dh>ref)ref=dh;
+    rows.push(row);
+  }
+  return {cols:KEYS,rows,ref,file:fileName||"",uploadedAt:new Date().toISOString(),n:rows.length};
+}
+
+/* ---------- state ---------- */
+const S={data:null,hist:[],canWrite:true,mode:"local",senha:"",versao:null,offline:false,f:{q:"",mesa:"",mot:"",tipo:"",urg:false,sit:"",ponto:"",alerta:""},sort:{k:"prio",d:"desc"},open:new Set()};
+
+function rowsFromData(d){
+  if(!d||!Array.isArray(d.rows))return[];
+  const ci={};d.cols.forEach((c,i)=>ci[c]=i);
+  const refT=d.ref?new Date(d.ref).getTime():Date.now();
+  return d.rows.map(a=>{const o={};for(const k of KEYS)o[k]=ci[k]==null?null:a[ci[k]];
+    o.tipo=/PROGRAMAD/i.test(o.mot||"")?"P":"E";
+    o.urgente=/URGENTE/i.test(o.crit||"");
+    o.idade=o.dh?(refT-new Date(o.dh).getTime())/60000:null;
+    o.prioritario=!!o.cli||(o.vip||0)>0;
+    return o});
+}
+
+const ALERTS=[
+  {id:"urgsem",t:"urgentes ainda sem equipe a caminho",test:o=>o.urgente&&o.sit==="Atribuida",cls:""},
+  {id:"velhas",t:"emergenciais abertas há mais de 4 horas",test:o=>o.tipo==="E"&&o.idade>240,cls:""},
+  {id:"rech",t:"com 3 ou mais rechamadas do cliente",test:o=>(o.rech||0)>=3,cls:"w"},
+  {id:"prio",t:"afetando clientes prioritários (idoso, vital, grupo A, VIP)",test:o=>o.prioritario,cls:"w"}
+];
+
+function applyFilters(all,skip){
+  const f=S.f,q=norm(f.q);
+  return all.filter(o=>{
+    if(skip!=="sit"&&f.sit&&o.sit!==f.sit)return false;
+    if(skip!=="ponto"&&f.ponto&&o.ponto!==f.ponto)return false;
+    if(f.mesa&&o.mesa!==f.mesa)return false;
+    if(skip!=="mot"&&f.mot&&o.mot!==f.mot)return false;
+    if(f.tipo&&o.tipo!==f.tipo)return false;
+    if(f.urg&&!o.urgente)return false;
+    if(f.alerta){const a=ALERTS.find(x=>x.id===f.alerta);if(a&&!a.test(o))return false}
+    if(q){const hay=norm([o.oe,o.end,o.bairro,o.prefixo,o.inst,o.mun,o.ponto].join(" "));if(!hay.includes(q))return false}
+    return true});
+}
+
+/* ---------- render ---------- */
+function render(){
+  const d=S.data;
+  $("main").hidden=!d; $("emptyAll").hidden=!!d;
+  renderFresh();
+  if(!d)return;
+  const all=rowsFromData(d);
+  $("sub").textContent="Equatorial Goiás · base com ocorrências até "+fmtHora(d.ref)+(d.file?" · "+d.file:"");
+  fillSelect("fMesa","Todas as mesas",uniq(all.map(o=>o.mesa)),S.f.mesa);
+  fillSelect("fMot","Todos os motivos",uniq(all.map(o=>o.mot)),S.f.mot,title);
+
+  // pipeline (ignores situação filter so the bar stays whole)
+  const base=applyFilters(all,"sit");
+  const bySit={};for(const o of base){(bySit[o.sit]=bySit[o.sit]||[]).push(o)}
+  const order=SITS.concat(Object.keys(bySit).filter(s=>!SITS.includes(s)));
+  $("bar").innerHTML=order.map(s=>{const arr=bySit[s]||[];if(!arr.length&&!SITS.includes(s))return"";const t=arr.map(o=>o.tempo).filter(x=>x!=null).sort((a,b)=>a-b);const med=t.length?t[Math.floor(t.length/2)]:null;
+    const cls=SITS.includes(s)?"s-"+s:"s-Outro";const off=S.f.sit&&S.f.sit!==s?" off":"";
+    return `<button type="button" class="seg ${cls}${off}" data-sit="${esc(s)}" style="flex:${Math.max(arr.length,1)} 1 0" aria-pressed="${S.f.sit===s}"><span class="n num">${arr.length}</span><span><span class="l">${esc(SIT_LABEL[s]||s)}</span><br><span class="m">${med!=null?"mediana "+fmtDur(med)+" nesta etapa":"&nbsp;"}</span></span></button>`}).join("");
+
+  const rows=applyFilters(all);
+  // figures
+  const ucs=rows.reduce((s,o)=>s+(o.ucs||0),0);
+  const urg=rows.filter(o=>o.urgente).length;
+  const em=rows.filter(o=>o.tipo==="E");
+  const idades=em.map(o=>o.idade).filter(x=>x!=null);
+  const medIdade=idades.length?idades.sort((a,b)=>a-b)[Math.floor(idades.length/2)]:null;
+  const trafos=rows.filter(o=>/transformador|chave/i.test(o.abr||"")).length;
+  $("figs").innerHTML=[
+    [fmtN(rows.length),"ocorrências abertas"],
+    [fmtN(ucs),"unidades consumidoras afetadas"],
+    [fmtN(urg),"urgentes","urg"],
+    [fmtN(em.length)+" / "+fmtN(rows.length-em.length),"emergenciais / programadas"],
+    [fmtN(trafos),"em transformador ou chave"],
+    [fmtDur(medIdade),"tempo mediano em aberto (emergenciais)"]
+  ].map(([v,k,c])=>`<div class="fig ${c||""}"><div class="v num">${v}</div><div class="k">${k}</div></div>`).join("");
+
+  // alerts (computed on all rows, so they stay visible as shortcuts)
+  $("alerts").innerHTML=ALERTS.map(a=>{const n=all.filter(a.test).length;const on=S.f.alerta===a.id;
+    return `<button type="button" class="alert ${a.cls}${n?"":" zero"}${on?" on":""}" data-alerta="${a.id}" ${n?"":"disabled"} aria-pressed="${on}"><span class="c num">${n}</span><span class="t">${a.t}</span></button>`}).join("");
+
+  renderTable(rows);
+  renderHBars("pontos",applyFilters(all,"ponto"),"ponto",S.f.ponto,12,s=>s.replace(/^\d+\s*/,""));
+  $("pontoN").textContent=uniq(all.map(o=>o.ponto)).length+" bases";
+  $("leg").innerHTML=SITS.map(s=>`<span class="pill"><i style="background:var(${SIT_VAR[s]})"></i>${SIT_LABEL[s]}</span>`).join("");
+  renderHBars("motivos",applyFilters(all,"mot"),"mot",S.f.mot,10,title);
+  renderSpark();
+  const any=S.f.q||S.f.mesa||S.f.mot||S.f.tipo||S.f.urg||S.f.sit||S.f.ponto||S.f.alerta;
+  $("clr").hidden=!any;
+}
+function uniq(a){return[...new Set(a.filter(Boolean))].sort((x,y)=>x.localeCompare(y,"pt-BR"))}
+function fillSelect(id,label,vals,cur,fmt){const el=$(id);const html=`<option value="">${label}</option>`+vals.map(v=>`<option value="${esc(v)}"${v===cur?" selected":""}>${esc(fmt?fmt(v):v)}</option>`).join("");if(el.dataset.h!==html){el.innerHTML=html;el.dataset.h=html}el.value=cur||""}
+
+const COLS=[
+  {k:"oe",l:"OE"},{k:"sit",l:"Situação"},{k:"mot",l:"Motivo"},{k:"local",l:"Local"},
+  {k:"ucs",l:"UCs",n:1},{k:"idade",l:"Em aberto",n:1},{k:"tempo",l:"Na etapa",n:1,cls:"hide-sm"},{k:"prefixo",l:"Equipe",cls:"hide-sm"},{k:"prio",l:"Prioridade",n:1}
+];
+function sortVal(o,k){if(k==="prio")return(o.urgente?1e6:0)+(o.prio||0)*1000+(o.idade||0)/1e3;if(k==="local")return(o.bairro||"")+(o.mun||"");return o[k]}
+function renderTable(rows){
+  const {k,d}=S.sort;const m=d==="asc"?1:-1;
+  rows=rows.slice().sort((a,b)=>{const x=sortVal(a,k),y=sortVal(b,k);if(x==null&&y==null)return 0;if(x==null)return 1;if(y==null)return-1;return(typeof x==="number"?x-y:String(x).localeCompare(String(y),"pt-BR"))*m});
+  $("thr").innerHTML=COLS.map(c=>`<th class="${c.cls||""}" data-k="${c.k}" tabindex="0" ${k===c.k?`aria-sort="${d==="asc"?"ascending":"descending"}"`:""}>${c.l}</th>`).join("");
+  $("cnt").textContent=rows.length===1?"1 ocorrência":fmtN(rows.length)+" ocorrências";
+  if(!rows.length){$("tb").innerHTML=`<tr><td colspan="${COLS.length}" class="empty">Nenhuma ocorrência com esses filtros. Limpe os filtros para ver todas.</td></tr>`;return}
+  const maxAge=720;
+  $("tb").innerHTML=rows.map(o=>{
+    const age=o.idade,cls=age>240?"hot":age>120?"mid":"";
+    const w=Math.min(100,(age||0)/maxAge*100);
+    const tags=(o.urgente?'<span class="tag u">Urgente</span> ':"")+(o.tipo==="P"?'<span class="tag p">Programada</span> ':"")+(o.prioritario?`<span class="tag cli">${esc(title(o.cli||"VIP"))}</span>`:"");
+    const open=S.open.has(o.oe);
+    const main=`<tr class="r${open?" open":""}" data-oe="${esc(o.oe)}" tabindex="0" aria-expanded="${open}">
+      <td><div class="oe num">${esc(o.oe)}</div><div>${tags}</div></td>
+      <td><span class="pill"><i style="background:var(${SIT_VAR[o.sit]||"--muted"})"></i>${esc(SIT_LABEL[o.sit]||o.sit||"–")}</span></td>
+      <td>${esc(title(o.mot||"–"))}${o.defs?`<div class="small">${esc(title(o.defs))}</div>`:""}</td>
+      <td>${esc(title(o.bairro||"–"))}<div class="small">${esc(title(o.mun||""))}</div></td>
+      <td class="num">${o.ucs!=null?fmtN(o.ucs):"–"}</td>
+      <td><span class="age ${cls}"><span class="track"><span class="fill" style="width:${w}%"></span></span><b class="num">${fmtDur(age)}</b></span></td>
+      <td class="num hide-sm">${fmtDur(o.tempo)}</td>
+      <td class="num hide-sm">${esc(o.prefixo||"–")}</td>
+      <td class="num">${o.prio!=null?Math.round(o.prio):"–"}</td></tr>`;
+    if(!open)return main;
+    const dl=[["Endereço",o.end],["Bairro",title(o.bairro)],["Município",title(o.mun)],["Base",o.ponto],["Mesa",o.mesa],["SE / AL",(o.se||"–")+" / "+(o.al||"–")],["Instalação",o.inst],["Abrangência",o.abr+(o.aneel?" ("+o.aneel+")":"")],["Aberta em",fmtHora(o.dh)],["Tratamento",o.trat],["NRs vinculadas",o.nrs],["Reincidência",o.reinc],["Rechamadas",o.rech],["OE de referência",o.oeref],["Equipe retirada",o.ret?"Sim":"Não"],["Tipo de cliente",o.cli?title(o.cli):null]]
+      .filter(([,v])=>v!=null&&v!=="").map(([k,v])=>`<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("");
+    return main+`<tr class="det"><td colspan="${COLS.length}"><dl class="dl">${dl}</dl></td></tr>`;
+  }).join("");
+}
+function renderHBars(id,rows,key,cur,limit,fmt){
+  const g={};for(const o of rows){const v=o[key]||"(sem)";(g[v]=g[v]||{n:0,s:{}}).n++;g[v].s[o.sit]=(g[v].s[o.sit]||0)+1}
+  const list=Object.entries(g).sort((a,b)=>b[1].n-a[1].n).slice(0,limit);
+  if(!list.length){$(id).innerHTML='<div class="small">Sem dados para esses filtros.</div>';return}
+  const max=list[0][1].n;
+  $(id).innerHTML=list.map(([v,x])=>{const segs=SITS.map(s=>x.s[s]?`<span style="width:${x.s[s]/max*100}%;background:var(${SIT_VAR[s]})"></span>`:"").join("");
+    return `<button type="button" class="hb${cur===v?" on":""}" data-k="${key}" data-v="${esc(v)}" aria-pressed="${cur===v}" title="${esc(v)}"><span class="nm">${esc(fmt?fmt(v):v)}</span><span class="ct num">${x.n}</span><span class="stack">${segs}</span></button>`}).join("");
+}
+function renderSpark(){
+  const h=(S.hist||[]).slice().sort((a,b)=>a.t<b.t?-1:1).slice(-48);
+  if(h.length<2){$("spark").innerHTML='<p class="small" style="margin:0">O gráfico aparece a partir da segunda atualização da base. Cada envio de XML vira um ponto.</p>';return}
+  const W=300,H=110,P=6,mx=Math.max(...h.map(p=>p.total),1);
+  const x=i=>P+i*(W-2*P)/(h.length-1),y=v=>H-18-(v/mx)*(H-30);
+  const line=k=>h.map((p,i)=>(i?"L":"M")+x(i).toFixed(1)+" "+y(p[k]||0).toFixed(1)).join(" ");
+  const last=h[h.length-1];
+  $("spark").innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Total de ocorrências nas últimas ${h.length} atualizações">
+    <path d="${line("total")}" fill="none" stroke="var(--ink)" stroke-width="2"/>
+    <path d="${line("urg")}" fill="none" stroke="var(--urg)" stroke-width="1.5" stroke-dasharray="4 3"/>
+    <circle cx="${x(h.length-1)}" cy="${y(last.total)}" r="3.5" fill="var(--ink)"/>
+    <text x="${P}" y="${H-3}" font-size="10" fill="var(--muted)">${esc(fmtHora(h[0].t))}</text>
+    <text x="${W-P}" y="${H-3}" font-size="10" fill="var(--muted)" text-anchor="end">${esc(fmtHora(last.t))}</text>
+  </svg><div class="legend" style="padding:6px 0 0"><span class="pill"><i style="background:var(--ink)"></i>Total (${last.total})</span><span class="pill"><i style="background:var(--urg)"></i>Urgentes (${last.urg})</span></div>`;
+}
+function renderFresh(){
+  const d=S.data,el=$("fresh");
+  if(!d){$("freshTxt").textContent=S.mode==="local"?"Sem base carregada":"Sem base carregada";el.classList.remove("stale");return}
+  const ago=(Date.now()-new Date(d.uploadedAt).getTime())/60000;
+  const stale=ago>75;
+  el.classList.toggle("stale",stale);
+  $("freshTxt").innerHTML=(stale?"<b>Base atrasada</b> · ":"")+"atualizada há "+esc(fmtDur(ago))+(S.mode==="local"?" · só neste navegador":"")+(S.offline?" · <b>sem conexão, tentando de novo</b>":"");
+}
+
+/* ---------- data flow ---------- */
+const CFG=window.PAINEL_CONFIG||{};
+const BASE=String(CFG.url||"").replace(/\/+$/,"");
+const CONFIG_OK=/^https:\/\/[^\s]+$/.test(BASE)&&String(CFG.chave||"").length>20;
+async function rpc(fn,body){
+  const r=await fetch(BASE+"/rest/v1/rpc/"+fn,{method:"POST",headers:{"apikey":CFG.chave,"Content-Type":"application/json"},body:JSON.stringify(body)});
+  const txt=await r.text();let j=null;try{j=txt?JSON.parse(txt):null}catch(e){}
+  if(!r.ok){const e=new Error((j&&(j.message||j.hint))||("HTTP "+r.status));e.status=r.status;throw e}
+  return j;
+}
+function flash(t,ok){const m=$("msg");m.textContent=t;m.className="msg"+(ok?" ok":"");m.hidden=false;clearTimeout(flash.t);flash.t=setTimeout(()=>m.hidden=true,ok?5000:12000)}
+
+async function handleFile(file){
+  if(!file)return;
+  if(!/\.xml$/i.test(file.name)&&!/xml/.test(file.type)){flash("Esse arquivo não é XML. Envie a exportação de ocorrências em .xml.");return}
+  let data;
+  try{data=parseXML(await file.text(),file.name)}catch(e){flash(e.message);return}
+  if(!data.n){flash("O arquivo não tem nenhuma ocorrência. Confira a exportação.");return}
+  if(S.mode==="shared"){
+    $("upBtn").disabled=true;$("upBtn").textContent="Enviando…";
+    try{
+      await rpc("painel_atualizar",{p_senha:S.senha,p_dados:data,p_ponto:histPoint(data)});
+      await remoteLoad();
+      flash("Base atualizada para todos: "+data.n+" ocorrências.",true);
+    }catch(e){
+      if(/sem_permissao/.test(e.message))flash("Essa senha só permite visualizar. Entre com a senha de atualização para enviar a base.");
+      else if(/senha_invalida/.test(e.message))logout("A senha do painel foi trocada. Entre de novo.");
+      else flash("Não consegui enviar a base ("+e.message+"). Verifique a internet e tente de novo.");
+    }finally{$("upBtn").disabled=false;$("upBtn").textContent="Atualizar base (XML)"}
+  }else{setLocal(data);flash("Base carregada neste navegador: "+data.n+" ocorrências.",true)}
+}
+function histPoint(d){const r=rowsFromData(d);return{t:d.ref||d.uploadedAt,total:r.length,urg:r.filter(o=>o.urgente).length,ucs:r.reduce((s,o)=>s+(o.ucs||0),0)}}
+function setLocal(d){
+  S.data=d;
+  try{let h=JSON.parse(localStorage.getItem("painelOc.hist")||"[]");const p=histPoint(d);h=h.filter(x=>x.t!==p.t);h.push(p);h=h.slice(-96);S.hist=h;localStorage.setItem("painelOc.hist",JSON.stringify(h));localStorage.setItem("painelOc.data",JSON.stringify(d))}catch(e){}
+  render();
+}
+async function remoteLoad(){
+  const j=await rpc("painel_ler",{p_senha:S.senha});
+  S.data=j&&j.atual||null;S.hist=j&&j.historico||[];S.versao=j&&j.versao||null;
+  S.canWrite=!!(j&&j.pode_escrever);S.offline=false;
+  $("upBtn").hidden=!S.canWrite;render();
+}
+async function poll(){
+  if(S.mode!=="shared"||!S.senha||document.hidden)return;
+  try{const v=await rpc("painel_versao",{p_senha:S.senha});S.offline=false;if(v!==S.versao)await remoteLoad();else renderFresh()}
+  catch(e){if(/senha_invalida/.test(e.message))logout("A senha do painel foi trocada. Entre de novo.");else{S.offline=true;renderFresh()}}
+}
+function showLogin(msg){$("login").hidden=false;const er=$("loginErr");er.hidden=!msg;er.textContent=msg||"";setTimeout(()=>$("senha").focus(),50)}
+function logout(msg){S.senha="";S.data=null;S.hist=[];S.canWrite=false;$("upBtn").hidden=true;try{localStorage.removeItem("painelOc.senha")}catch(e){}render();showLogin(msg)}
+
+/* ---------- events ---------- */
+$("upBtn").onclick=()=>$("file").click();
+$("file").onchange=e=>{handleFile(e.target.files[0]);e.target.value=""};
+let dragN=0;
+addEventListener("dragenter",e=>{if(!S.canWrite||!$("login").hidden)return;e.preventDefault();dragN++;$("drop").classList.add("show")});
+addEventListener("dragleave",()=>{dragN=Math.max(0,dragN-1);if(!dragN)$("drop").classList.remove("show")});
+addEventListener("dragover",e=>e.preventDefault());
+addEventListener("drop",e=>{e.preventDefault();dragN=0;$("drop").classList.remove("show");if(S.canWrite)handleFile(e.dataTransfer.files[0])});
+
+document.addEventListener("click",e=>{
+  const seg=e.target.closest(".seg");if(seg){S.f.sit=S.f.sit===seg.dataset.sit?"":seg.dataset.sit;render();return}
+  const al=e.target.closest(".alert");if(al&&!al.disabled){S.f.alerta=S.f.alerta===al.dataset.alerta?"":al.dataset.alerta;render();return}
+  const hb=e.target.closest(".hb");if(hb){const k=hb.dataset.k==="ponto"?"ponto":"mot";S.f[k]=S.f[k]===hb.dataset.v?"":hb.dataset.v;render();return}
+  const th=e.target.closest("th[data-k]");if(th){sortBy(th.dataset.k);return}
+  const tr=e.target.closest("tr.r");if(tr){toggleRow(tr.dataset.oe)}
+});
+document.addEventListener("keydown",e=>{
+  if(e.key!=="Enter"&&e.key!==" ")return;
+  const th=e.target.closest&&e.target.closest("th[data-k]");if(th){e.preventDefault();sortBy(th.dataset.k);return}
+  const tr=e.target.closest&&e.target.closest("tr.r");if(tr){e.preventDefault();toggleRow(tr.dataset.oe);const again=document.querySelector(`tr.r[data-oe="${CSS.escape(tr.dataset.oe)}"]`);again&&again.focus()}
+});
+function sortBy(k){const c=COLS.find(x=>x.k===k);if(S.sort.k===k)S.sort.d=S.sort.d==="asc"?"desc":"asc";else S.sort={k,d:c&&c.n?"desc":"asc"};render()}
+function toggleRow(oe){S.open.has(oe)?S.open.delete(oe):S.open.add(oe);render()}
+$("q").oninput=e=>{S.f.q=e.target.value;clearTimeout(render.t);render.t=setTimeout(render,120)};
+$("fMesa").onchange=e=>{S.f.mesa=e.target.value;render()};
+$("fMot").onchange=e=>{S.f.mot=e.target.value;render()};
+$("fTipo").onchange=e=>{S.f.tipo=e.target.value;render()};
+$("fUrg").onchange=e=>{S.f.urg=e.target.checked;render()};
+$("clr").onclick=()=>{S.f={q:"",mesa:"",mot:"",tipo:"",urg:false,sit:"",ponto:"",alerta:""};$("q").value="";$("fTipo").value="";$("fUrg").checked=false;render()};
+setInterval(renderFresh,30000);
+
+
+/* ---------- boot ---------- */
+$("loginForm").addEventListener("submit",async e=>{
+  e.preventDefault();const v=$("senha").value;if(!v)return;
+  $("entrar").disabled=true;$("entrar").textContent="Entrando…";
+  S.senha=v;
+  try{await remoteLoad();try{localStorage.setItem("painelOc.senha",v)}catch(_){}$("login").hidden=true;$("senha").value=""}
+  catch(err){S.senha="";showLogin(/senha_invalida/.test(err.message)?"Senha incorreta. Confira com o responsável pelo painel.":"Não consegui conectar ao servidor ("+err.message+"). Verifique a internet e tente de novo.")}
+  finally{$("entrar").disabled=false;$("entrar").textContent="Entrar"}
+});
+$("sair").onclick=()=>logout("");
+
+if(CONFIG_OK){
+  S.mode="shared";S.canWrite=false;$("upBtn").hidden=true;$("sair").hidden=false;
+  render();
+  let saved="";try{saved=localStorage.getItem("painelOc.senha")||""}catch(e){}
+  if(saved){S.senha=saved;remoteLoad().catch(e=>{if(/senha_invalida/.test(e.message))logout("A senha do painel foi trocada. Entre de novo.");else{S.offline=true;renderFresh();flash("Sem conexão com o servidor. Vou tentar de novo a cada minuto.")}})}
+  else showLogin("");
+  setInterval(poll,60000);
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden)poll()});
+}else{
+  try{const d=JSON.parse(localStorage.getItem("painelOc.data")||"null");if(d){S.data=d;S.hist=JSON.parse(localStorage.getItem("painelOc.hist")||"[]")}}catch(e){}
+  render();
+  flash("Conexão com o Supabase não configurada: o painel está funcionando só neste navegador. Preencha PAINEL_CONFIG no início do arquivo.");
+}
+})();
+</script>
+</body>
+</html>
