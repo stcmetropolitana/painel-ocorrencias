@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -418,6 +418,14 @@ tr.r.open td{background:var(--panel2)}
 .regs .reg.cor .ponteiro{border-color:#fff}
 .regs .reg.cor.on{outline:4px solid var(--marca);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){.regs .reg.cor.niv4{animation:none}}
+
+/* ===== fundo azul-escuro Equatorial ===== */
+:root[data-theme="dark"]{--bg:#04173D;--panel:#0B2556;--panel2:#11306B;--line:#1F3F7A;--ink:#EAF1FB;--muted:#A9BCDB}
+body{background:radial-gradient(1200px 600px at 50% -10%,#0A2A66 0%,transparent 70%),var(--bg);background-attachment:fixed}
+.ramos span{background:#3DA9E8}
+.ramos::before{background:#04173D;border-color:#3DA9E8}
+.top{border:1px solid rgba(255,255,255,.12)}
+.regs .reg.cor .termo.mini .tubo{background:#fff}
 </style>
 <!-- A conexão com o Supabase fica no arquivo config.js, no mesmo repositório.
      Assim, ao atualizar este index.html, não é preciso colar a chave de novo. -->
