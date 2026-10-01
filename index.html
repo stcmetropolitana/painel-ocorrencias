@@ -764,7 +764,7 @@ const CONTINGENCIA={
       limites:{"Goiânia":[101,151,251],   "Metropolitana":[101,151,202]}},
     {id:"cli",  nome:"Clientes afetados",
       limites:{"Goiânia":[1001,1500,4001],"Metropolitana":[1001,1501,3501]}},
-    {id:"rede", nome:"Transformador, chave ou MT", curto:"Transf., chave ou MT",
+    {id:"rede", nome:"Transformador, chave ou MT com mais de 30 UCs", curto:"Transf./chave/MT +30 UCs", minUCs:31,
       limites:{"Goiânia":[11,16,21],      "Metropolitana":[31,51,71]}}
   ],
   /* Goiânia (definido pela operação): Nível 1 até 100 ocorr. / 1.000 clientes / 10 transf.;
@@ -776,10 +776,11 @@ const CONTINGENCIA={
   desceAposDuasAtualizacoes:true     // sobe na hora; só desce se a atualização anterior também estava abaixo
 };
 const NIV_COR=["","#1E8A4F","#E5B400","#C62828","#C62828"];
+const REDE_MIN_UCS=31; // só conta transformador, chave ou MT que afete mais de 30 UCs
 function indicadores(rows){
   const em=rows.filter(o=>o.tipo==="E");
   return{oc:em.length,cli:em.reduce((s,o)=>s+(o.ucs||0),0),
-    rede:em.filter(o=>/transformador|chave/i.test(o.abr||"")||String(o.aneel||"").toUpperCase()==="MT").length};
+    rede:em.filter(o=>(/transformador|chave/i.test(o.abr||"")||String(o.aneel||"").toUpperCase()==="MT")&&(o.ucs||0)>=REDE_MIN_UCS).length};
 }
 function nivelBruto(v,reg){
   const por=CONTINGENCIA.indicadores.map(i=>{
