@@ -426,6 +426,30 @@ body{background:radial-gradient(1200px 600px at 50% -10%,#0A2A66 0%,transparent 
 .ramos::before{background:#04173D;border-color:#3DA9E8}
 .top{border:1px solid rgba(255,255,255,.12)}
 .regs .reg.cor .termo.mini .tubo{background:#fff}
+
+/* horário da última atualização — topo, canto esquerdo */
+.upd{display:inline-flex;align-items:center;gap:12px;margin:0 0 10px;padding:8px 16px 8px 12px;border-radius:10px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-left:5px solid #5BE08F}
+.upd[hidden]{display:none}
+.upd-ic{font-size:22px;line-height:1}
+.upd-k{font-size:11px;font-weight:750;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.upd-v{font-size:clamp(20px,1.8vw,26px);font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums;color:var(--ink)}
+.upd-s{font-size:12px;color:var(--muted)}
+.upd.stale{border-left-color:#FFD166}
+.upd.stale .upd-s{color:#FFD166;font-weight:650}
+.regs{position:relative}
+@media (min-width:1150px){.upd{position:absolute;left:0;top:32px;margin:0;max-width:calc((100% - 580px)/2);z-index:2}}
+
+/* +24h e ícones da abrangência */
+.reg-kpis.k3{grid-template-columns:1fr 1fr 1.15fr}
+.k24{border-radius:8px;padding:2px 8px;background:rgba(255,255,255,.12)}
+.k24.tem{background:#8E0000;color:#fff!important;box-shadow:0 0 0 2px rgba(255,255,255,.7)}
+.regs .reg.cor .k24.tem .v,.regs .reg.cor .k24.tem .k{color:#fff!important;opacity:1}
+.regs .reg.cor.niv2 .k24{background:rgba(0,0,0,.08)}
+.k24 .k{font-size:11px!important}
+.ab{grid-template-columns:118px minmax(0,1fr) 30px}
+.ab-n{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden}
+.ab-ic{width:16px;height:16px;flex:none}
+.regs .reg.cor .k24.tem{background:#8E0000;box-shadow:0 0 0 2px rgba(255,255,255,.75)}
 </style>
 <!-- A conexão com o Supabase fica no arquivo config.js, no mesmo repositório.
      Assim, ao atualizar este index.html, não é preciso colar a chave de novo. -->
@@ -444,6 +468,7 @@ body{background:radial-gradient(1200px 600px at 50% -10%,#0A2A66 0%,transparent 
 <div class="drop" id="drop">Solte o arquivo XML para atualizar a base</div>
 <div class="wrap">
   <section class="regs" id="regsSec" hidden aria-label="Visão por regional">
+  <div class="upd" id="upd" hidden><span class="upd-ic" aria-hidden="true">🕒</span><div><div class="upd-k">Última atualização</div><div class="upd-v" id="updV">–</div><div class="upd-s" id="updS"></div></div></div>
     <div class="flow-head"><h2>Nível de contingência e visão por regional</h2><span class="note">Clique numa regional para filtrar o painel</span></div>
     <div id="regs"></div>
   </section>
@@ -715,9 +740,13 @@ function renderSpark(){
 }
 function renderFresh(){
   const d=S.data,el=$("fresh");
-  if(!d){$("freshTxt").textContent=S.mode==="local"?"Sem base carregada":"Sem base carregada";el.classList.remove("stale");return}
+  if(!d){$("freshTxt").textContent=S.mode==="local"?"Sem base carregada":"Sem base carregada";el.classList.remove("stale");$("upd").hidden=true;return}
   const ago=(Date.now()-new Date(d.uploadedAt).getTime())/60000;
   const stale=ago>75;
+  const up=new Date(d.uploadedAt);
+  $("upd").hidden=false;$("upd").classList.toggle("stale",stale);
+  $("updV").textContent=up.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"})+" às "+up.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+  $("updS").textContent=(stale?"Base atrasada · ":"")+"há "+fmtDur(ago)+" · ocorrências até "+fmtHora(d.ref);
   el.classList.toggle("stale",stale);
   $("freshTxt").innerHTML=(stale?"<b>Base atrasada</b> · ":"")+"atualizada há "+esc(fmtDur(ago))+(S.mode==="local"?" · só neste navegador":"")+(S.offline?" · <b>sem conexão, tentando de novo</b>":"")+(S.mode==="shared"&&S.checkedAt&&!S.offline?" · conferido às "+new Date(S.checkedAt).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit",second:"2-digit"}):"");
 }
@@ -797,6 +826,20 @@ function motivoTexto(r){
   return t+" · só emergenciais.";
 }
 
+
+/* ícones da abrangência (SVG simples, herdam a cor do texto) */
+function abrIcone(k){
+  const n=norm(k),sv=p=>`<svg class="ab-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+  if(n.startsWith("chave"))return sv('<circle cx="5" cy="16" r="2"/><circle cx="19" cy="16" r="2"/><path d="M7 15 17 7"/><path d="M2 16h1M21 16h1"/>');
+  if(n.startsWith("transformador"))return sv('<path d="M7 3v18"/><path d="M3 5h8"/><rect x="10" y="9" width="9" height="8" rx="1.5"/><path d="M12.5 9V7M16.5 9V7"/><path d="M7 11h3"/>');
+  if(n.startsWith("consumidor"))return sv('<path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>');
+  if(n.startsWith("alimentador"))return sv('<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>');
+  if(n.startsWith("subesta"))return sv('<path d="M4 21V9l8-6 8 6v12"/><path d="M9 21v-5h6v5"/><path d="M12 8v4"/>');
+  if(n.startsWith("religador"))return sv('<path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/>');
+  if(n.startsWith("nenhum"))return sv('<circle cx="12" cy="12" r="8"/><path d="M6.5 17.5l11-11"/>');
+  return sv('<circle cx="12" cy="12" r="8"/><path d="M12 8v5"/><path d="M12 16h.01"/>');
+}
+
 /* ---------- visão por regional ---------- */
 const ABR_ORDEM=["Subestação","Subestacao","Alimentador","Religador","Chave","Transformador","Consumidor","Nenhum"];
 function renderRegs(all){
@@ -814,6 +857,7 @@ function renderRegs(all){
       const quem=["Goiânia","Metropolitana"].filter(k=>niv[k].nivel===mx).map(k=>"Regional "+k);
       termo=termoHTML({nivel:mx,pos:Math.max(...["Goiânia","Metropolitana"].filter(k=>niv[k].nivel===mx).map(k=>niv[k].pos))},"Nível de contingência",mx===1?"As duas regionais em nível normal.":"Maior nível entre as regionais: "+quem.join(" e ")+".");
     }else termo=termoHTML(niv[g.id],"Nível de contingência",motivoTexto(niv[g.id]));
+    const o24=g.rows.filter(o=>o.tipo==="E"&&!o.ptp&&o.idade>1440),u24=o24.reduce((s,o)=>s+(o.ucs||0),0);
     const n=g.rows.length,ucs=g.rows.reduce((s,o)=>s+(o.ptp?0:(o.ucs||0)),0),em=g.rows.filter(o=>o.tipo==="E").length;
     const ab={};for(const o of g.rows){if(o.ptp)continue;const k=o.abr||"Não informado";ab[k]=(ab[k]||0)+1}
     const lista=Object.entries(ab).sort((a,b)=>{const ia=ABR_ORDEM.indexOf(a[0]),ib=ABR_ORDEM.indexOf(b[0]);return (ia<0?99:ia)-(ib<0?99:ib)||b[1]-a[1]});
@@ -823,8 +867,8 @@ function renderRegs(all){
     return `<button type="button" style="--nc:${NIV_COR[nivCard]}" class="reg cor niv${nivCard}${g.total?" total":""}${on?" on":""}${off?" off":""}" data-reg="${esc(g.id)}" aria-pressed="${on}">
       <div><h3>${esc(g.nome)}</h3><div class="sub2">${esc(g.desc)} · ${fmtN(em)} emergenciais, ${fmtN(n-em)} programadas</div></div>
       ${termo}
-      <div class="reg-kpis"><div><div class="v num">${fmtN(n)}</div><div class="k">ocorrências</div></div><div><div class="v num">${fmtN(ucs)}</div><div class="k">clientes afetados</div></div></div>
-      <div class="reg-abr"><span class="t abr-t">Ocorrências por abrangência</span><div class="ab-grid">${lista.map(([k,v])=>`<div class="ab"><span>${esc(k)}</span><span class="track"><span style="width:${v/mx*100}%"></span></span><b class="num">${fmtN(v)}</b></div>`).join("")||'<span class="small">Sem ocorrências</span>'}</div></div>
+      <div class="reg-kpis k3"><div><div class="v num">${fmtN(n)}</div><div class="k">ocorrências</div></div><div><div class="v num">${fmtN(ucs)}</div><div class="k">clientes afetados</div></div><div class="k24${o24.length?" tem":""}" title="Ocorrências emergenciais abertas há mais de 24 horas"><div class="v num">${fmtN(o24.length)}</div><div class="k">+24h sem energia · ${fmtN(u24)} clientes</div></div></div>
+      <div class="reg-abr"><span class="t abr-t">Ocorrências por abrangência</span><div class="ab-grid">${lista.map(([k,v])=>`<div class="ab"><span class="ab-n">${abrIcone(k)}${esc(k)}</span><span class="track"><span style="width:${v/mx*100}%"></span></span><b class="num">${fmtN(v)}</b></div>`).join("")||'<span class="small">Sem ocorrências</span>'}</div></div>
     </button>`});
   $("regs").innerHTML=`<div class="reg-topo">${cards[0]}</div>
     <div class="ramos" aria-hidden="true"><span class="v"></span><span class="hl"></span><span class="hr"></span><span class="e"></span><span class="d"></span></div>
