@@ -450,6 +450,12 @@ body{background:radial-gradient(1200px 600px at 50% -10%,#0A2A66 0%,transparent 
 .ab-n{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden}
 .ab-ic{width:16px;height:16px;flex:none}
 .regs .reg.cor .k24.tem{background:#8E0000;box-shadow:0 0 0 2px rgba(255,255,255,.75)}
+
+.nv-pct{font-style:normal;font-weight:850;font-size:clamp(14px,1.2vw,17px);padding:1px 8px;border-radius:999px;background:rgba(0,0,0,.08);margin-right:2px;font-variant-numeric:tabular-nums}
+.nv-badge{align-items:baseline;gap:7px}
+.nv-badge span{text-transform:none;letter-spacing:0;font-size:clamp(15px,1.3vw,18px);font-weight:800}
+.nv-badge b{font-size:clamp(15px,1.3vw,18px);letter-spacing:0}
+.nv-pct{background:none!important;padding:0!important;margin:0!important;font-size:clamp(15px,1.3vw,18px)!important;font-weight:700!important}
 </style>
 <!-- A conexão com o Supabase fica no arquivo config.js, no mesmo repositório.
      Assim, ao atualizar este index.html, não é preciso colar a chave de novo. -->
@@ -806,10 +812,12 @@ function nivelRegional(reg,v){
   return{...atual,nivel,pos,mantido};
 }
 function termoHTML(r,titulo,motivo){
+  // % dentro do nível atual = quanto já andou em direção ao próximo nível (não aparece no Nível 4)
+  const pct=(r.nivel<4&&r.pos!=null&&!r.mantido)?Math.max(0,Math.min(99,Math.round((r.pos-(r.nivel-1))*100))):null;
   const n=r.nivel,cor=NIV_COR[n],fill=Math.max(4,Math.min(100,(r.pos!=null?r.pos:n-.5)/4*100));
   const chips=(r.por||[]).map(p=>`<div class="ind"><span class="ind-k"><i style="background:${NIV_COR[p.nivel]}"></i>${esc(p.curto||p.nome)}</span><b class="num">${fmtN(p.valor)}</b></div>`).join("");
   return `<div class="mini-termo">
-    <div class="mt-top"><span class="mt-lbl">${esc(titulo)}</span><span class="nv-badge nb${n}" title="${esc(String(motivo).replace(/<[^>]+>/g,""))}" style="--nc:${cor};background:${cor};color:${n===2?"#1a1a1a":"#fff"}"><b>NÍVEL ${n}</b><span>${esc(CONTINGENCIA.nomes[n])}</span></span></div>
+    <div class="mt-top"><span class="mt-lbl">${esc(titulo)}</span><span class="nv-badge nb${n}" title="${esc(String(motivo).replace(/<[^>]+>/g,""))}" style="--nc:${cor};background:${cor};color:${n===2?"#1a1a1a":"#fff"}"><span>${esc(CONTINGENCIA.nomes[n])}</span><b>Nível ${n}</b>${pct!=null?`<em class="nv-pct" title="${pct}% do caminho até o Nível ${n+1}">(${pct}%)</em>`:""}</span></div>
     <div class="termo mini sem-bulbo" aria-hidden="true">
       <div class="tubo-wrap"><div class="tubo"><div class="zonas"><span class="z1"></span><span class="z2"></span><span class="z3"></span><span class="z4"></span></div><div class="mercurio fixo" style="--fill:${fill}%;clip-path:inset(0 ${100-fill}% 0 0 round 999px)"></div></div>
       <span class="ponteiro${n>=2?" pisca p"+n:""}" style="--fill:${fill}%;left:${fill}%;background:${cor}"></span></div></div>
@@ -975,6 +983,7 @@ $("fTipo").onchange=e=>{S.f.tipo=e.target.value;render()};
 $("fUrg").onchange=e=>{S.f.urg=e.target.checked;render()};
 $("clr").onclick=()=>{S.f={q:"",mesa:"",mot:"",tipo:"",urg:false,sit:"",ponto:"",alerta:"",reg:""};$("q").value="";$("fTipo").value="";$("fUrg").checked=false;render()};
 setInterval(renderFresh,30000);
+
 
 
 /* ---------- boot ---------- */
