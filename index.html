@@ -483,6 +483,10 @@ body{background:radial-gradient(1200px 600px at 50% -10%,#0A2A66 0%,transparent 
 .reg-kpis.k3{grid-template-columns:repeat(4,minmax(0,1fr))}
 .kpi{align-items:center;text-align:center}
 .kpi .k{white-space:nowrap}
+/* quadrado em cada número */
+.kpi{background:rgba(255,255,255,.14);border:1.5px solid rgba(255,255,255,.4);border-radius:10px;padding:8px 6px 7px}
+.regs .reg.cor.niv2 .kpi{background:rgba(255,255,255,.35);border-color:rgba(0,0,0,.2)}
+.reg-kpis.k3{gap:8px}
 </style>
 <!-- A conexão com o Supabase fica no arquivo config.js, no mesmo repositório.
      Assim, ao atualizar este index.html, não é preciso colar a chave de novo. -->
