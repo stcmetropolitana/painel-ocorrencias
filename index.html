@@ -6,7 +6,7 @@
 <title>Ocorrências em andamento · Equatorial Goiás</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   /* ===== CORES DA MARCA — ajuste aqui se tiver os códigos oficiais do manual ===== */
@@ -456,6 +456,33 @@ body{background:radial-gradient(1200px 600px at 50% -10%,#0A2A66 0%,transparent 
 .nv-badge span{text-transform:none;letter-spacing:0;font-size:clamp(15px,1.3vw,18px);font-weight:800}
 .nv-badge b{font-size:clamp(15px,1.3vw,18px);letter-spacing:0}
 .nv-pct{background:none!important;padding:0!important;margin:0!important;font-size:clamp(15px,1.3vw,18px)!important;font-weight:700!important}
+/* fonte dos tipos de abrangência: Roboto Condensed em caixa alta */
+.ab-n{font-family:"IBM Plex Sans",Arial,sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:.02em;font-size:13px}
+.ab{grid-template-columns:134px minmax(0,1fr) 30px}
+/* fonte dos cards: IBM Plex Sans */
+.regs .reg,.regs .reg *{font-family:"IBM Plex Sans","Segoe UI",Arial,sans-serif;font-stretch:normal}
+.regs .reg h3{font-weight:700}
+.regs .reg .v,.regs .reg .ind b,.regs .reg .ab b,.regs .reg .nv-badge b,.regs .reg .nv-badge span,.regs .reg .nv-pct{font-weight:700}
+/* data de atualização discreta */
+.upd{display:block;padding:0;margin:0 0 6px;background:none;border:none;border-radius:0;font-size:12.5px;color:var(--muted);max-width:none}
+.upd .upd-k{font-size:12.5px;font-weight:400;letter-spacing:0;text-transform:none;color:var(--muted)}
+.upd .upd-v{font-size:12.5px;font-weight:600;color:var(--ink);opacity:.85}
+.upd .upd-s{font-size:12.5px;color:var(--muted)}
+.upd.stale .upd-s{color:#FFD166;font-weight:600}
+@media (min-width:1150px){.upd{position:absolute;left:0;top:30px;margin:0;max-width:calc((100% - 580px)/2)}}
+/* KPIs com bolinha de status (verde dentro do limite, vermelho acima) */
+.reg-kpis.k3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.kpi{position:relative;display:flex;flex-direction:column}
+.kpi .st{width:13px;height:13px;border-radius:50%;margin-bottom:4px;box-shadow:0 0 0 2px #fff}
+.kpi .st.ok{background:#2ECC71}
+.kpi .st.fora{background:#FF2D20;animation:stFora 1.4s ease-in-out infinite}
+@keyframes stFora{0%,100%{box-shadow:0 0 0 2px #fff,0 0 0 0 rgba(255,45,32,.6)}50%{box-shadow:0 0 0 2px #fff,0 0 0 7px rgba(255,45,32,0)}}
+@media (prefers-reduced-motion:reduce){.kpi .st.fora{animation:none}}
+.ab{grid-template-columns:150px minmax(0,1fr) 30px}
+.ab-n{letter-spacing:0}
+.reg-kpis.k3{grid-template-columns:repeat(4,minmax(0,1fr))}
+.kpi{align-items:center;text-align:center}
+.kpi .k{white-space:nowrap}
 </style>
 <!-- A conexão com o Supabase fica no arquivo config.js, no mesmo repositório.
      Assim, ao atualizar este index.html, não é preciso colar a chave de novo. -->
@@ -474,7 +501,7 @@ body{background:radial-gradient(1200px 600px at 50% -10%,#0A2A66 0%,transparent 
 <div class="drop" id="drop">Solte o arquivo XML para atualizar a base</div>
 <div class="wrap">
   <section class="regs" id="regsSec" hidden aria-label="Visão por regional">
-  <div class="upd" id="upd" hidden><span class="upd-ic" aria-hidden="true">🕒</span><div><div class="upd-k">Última atualização</div><div class="upd-v" id="updV">–</div><div class="upd-s" id="updS"></div></div></div>
+  <div class="upd" id="upd" hidden><span class="upd-k">Atualizado em</span> <span class="upd-v" id="updV">–</span> <span class="upd-s" id="updS"></span></div>
     <div class="flow-head"><h2>Nível de contingência e visão por regional</h2><span class="note">Clique numa regional para filtrar o painel</span></div>
     <div id="regs"></div>
   </section>
@@ -752,7 +779,7 @@ function renderFresh(){
   const up=new Date(d.uploadedAt);
   $("upd").hidden=false;$("upd").classList.toggle("stale",stale);
   $("updV").textContent=up.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"})+" às "+up.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
-  $("updS").textContent=(stale?"Base atrasada · ":"")+"há "+fmtDur(ago)+" · ocorrências até "+fmtHora(d.ref);
+  $("updS").textContent="· "+(stale?"base atrasada, ":"")+"há "+fmtDur(ago);
   el.classList.toggle("stale",stale);
   $("freshTxt").innerHTML=(stale?"<b>Base atrasada</b> · ":"")+"atualizada há "+esc(fmtDur(ago))+(S.mode==="local"?" · só neste navegador":"")+(S.offline?" · <b>sem conexão, tentando de novo</b>":"")+(S.mode==="shared"&&S.checkedAt&&!S.offline?" · conferido às "+new Date(S.checkedAt).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit",second:"2-digit"}):"");
 }
@@ -770,7 +797,7 @@ const CONTINGENCIA={
       limites:{"Goiânia":[101,151,251],   "Metropolitana":[101,151,202]}},
     {id:"cli",  nome:"Clientes afetados",
       limites:{"Goiânia":[1001,1500,4001],"Metropolitana":[1001,1501,3501]}},
-    {id:"rede", nome:"Transformador, chave ou MT com mais de 30 UCs", curto:"Transf./chave/MT +30 UCs", minUCs:31,
+    {id:"rede", nome:"Transformador, chave ou MT com mais de 30 UCs", curto:"Transf., chave ou MT", minUCs:31,
       limites:{"Goiânia":[11,16,21],      "Metropolitana":[31,51,71]}}
   ],
   /* Goiânia (definido pela operação): Nível 1 até 100 ocorr. / 1.000 clientes / 10 transf.;
@@ -815,14 +842,13 @@ function termoHTML(r,titulo,motivo){
   // % dentro do nível atual = quanto já andou em direção ao próximo nível (não aparece no Nível 4)
   const pct=(r.nivel<4&&r.pos!=null&&!r.mantido)?Math.max(0,Math.min(99,Math.round((r.pos-(r.nivel-1))*100))):null;
   const n=r.nivel,cor=NIV_COR[n],fill=Math.max(4,Math.min(100,(r.pos!=null?r.pos:n-.5)/4*100));
-  const chips=(r.por||[]).map(p=>`<div class="ind"><span class="ind-k"><i style="background:${NIV_COR[p.nivel]}"></i>${esc(p.curto||p.nome)}</span><b class="num">${fmtN(p.valor)}</b></div>`).join("");
+  const chips=(r.por||[]).map(p=>`<div class="ind" title="${esc(p.nome)}"><span class="ind-k"><i style="background:${NIV_COR[p.nivel]}"></i>${esc(p.curto||p.nome)}</span><b class="num">${fmtN(p.valor)}</b></div>`).join("");
   return `<div class="mini-termo">
     <div class="mt-top"><span class="mt-lbl">${esc(titulo)}</span><span class="nv-badge nb${n}" title="${esc(String(motivo).replace(/<[^>]+>/g,""))}" style="--nc:${cor};background:${cor};color:${n===2?"#1a1a1a":"#fff"}"><span>${esc(CONTINGENCIA.nomes[n])}</span><b>Nível ${n}</b>${pct!=null?`<em class="nv-pct" title="${pct}% do caminho até o Nível ${n+1}">(${pct}%)</em>`:""}</span></div>
     <div class="termo mini sem-bulbo" aria-hidden="true">
       <div class="tubo-wrap"><div class="tubo"><div class="zonas"><span class="z1"></span><span class="z2"></span><span class="z3"></span><span class="z4"></span></div><div class="mercurio fixo" style="--fill:${fill}%;clip-path:inset(0 ${100-fill}% 0 0 round 999px)"></div></div>
       <span class="ponteiro${n>=2?" pisca p"+n:""}" style="--fill:${fill}%;left:${fill}%;background:${cor}"></span></div></div>
     <div class="termo-niveis mini" aria-hidden="true"><span class="n1">Nível 1</span><span class="n2">Nível 2</span><span class="n3">Nível 3</span><span class="n4">Nível 4</span></div>
-    ${chips?`<div class="inds">${chips}</div>`:""}
   </div>`;
 }
 function motivoTexto(r){
@@ -866,7 +892,16 @@ function renderRegs(all){
       const quem=["Goiânia","Metropolitana"].filter(k=>niv[k].nivel===mx).map(k=>"Regional "+k);
       termo=termoHTML({nivel:mx,pos:Math.max(...["Goiânia","Metropolitana"].filter(k=>niv[k].nivel===mx).map(k=>niv[k].pos))},"Nível de contingência",mx===1?"As duas regionais em nível normal.":"Maior nível entre as regionais: "+quem.join(" e ")+".");
     }else termo=termoHTML(niv[g.id],"Nível de contingência",motivoTexto(niv[g.id]));
-    const o24=g.rows.filter(o=>o.tipo==="E"&&!o.ptp&&o.idade>1440),u24=o24.reduce((s,o)=>s+(o.ucs||0),0);
+        const o24=g.rows.filter(o=>o.tipo==="E"&&!o.ptp&&o.idade>1440),u24=o24.reduce((s,o)=>s+(o.ucs||0),0);
+    // indicadores do nível com bolinha: verde = dentro do limite do Nível 1, vermelho = acima
+    const vals=g.total?indicadores(g.rows):null;
+    const kpis=CONTINGENCIA.indicadores.map((ind,ix)=>{
+      let valor,fora;
+      if(g.total){valor=vals[ind.id];fora=["Goiânia","Metropolitana"].some(k=>niv[k].por[ix].nivel>1)}
+      else{const p=niv[g.id].por[ix];valor=p.valor;fora=p.nivel>1}
+      const rot={oc:"ocorrências",cli:"clientes afetados",rede:"transf., chave ou MT"}[ind.id];
+      return `<div class="kpi" title="${esc(ind.nome)}${fora?" — acima do limite do Nível 1":" — dentro do limite"}"><span class="st ${fora?"fora":"ok"}"></span><div class="v num">${fmtN(valor)}</div><div class="k">${rot}</div></div>`;
+    }).join("")+`<div class="kpi" title="Ocorrências emergenciais abertas há mais de 24 horas · ${fmtN(u24)} clientes"><span class="st ${o24.length?"fora":"ok"}"></span><div class="v num">${fmtN(o24.length)}</div><div class="k">+24h sem energia</div></div>`;
     const n=g.rows.length,ucs=g.rows.reduce((s,o)=>s+(o.ptp?0:(o.ucs||0)),0),em=g.rows.filter(o=>o.tipo==="E").length;
     const ab={};for(const o of g.rows){if(o.ptp)continue;const k=o.abr||"Não informado";ab[k]=(ab[k]||0)+1}
     const lista=Object.entries(ab).sort((a,b)=>{const ia=ABR_ORDEM.indexOf(a[0]),ib=ABR_ORDEM.indexOf(b[0]);return (ia<0?99:ia)-(ib<0?99:ib)||b[1]-a[1]});
@@ -874,9 +909,9 @@ function renderRegs(all){
     const on=g.total?false:S.f.reg===g.id, off=S.f.reg&&!g.total&&S.f.reg!==g.id;
     const nivCard=g.total?Math.max(niv["Goiânia"].nivel,niv["Metropolitana"].nivel):niv[g.id].nivel;
     return `<button type="button" style="--nc:${NIV_COR[nivCard]}" class="reg cor niv${nivCard}${g.total?" total":""}${on?" on":""}${off?" off":""}" data-reg="${esc(g.id)}" aria-pressed="${on}">
-      <div><h3>${esc(g.nome)}</h3><div class="sub2">${esc(g.desc)} · ${fmtN(em)} emergenciais, ${fmtN(n-em)} programadas</div></div>
+      <div><h3>${esc(g.nome)}</h3><div class="sub2">${fmtN(em)} emergenciais · ${fmtN(n-em)} programadas</div></div>
       ${termo}
-      <div class="reg-kpis k3"><div><div class="v num">${fmtN(n)}</div><div class="k">ocorrências</div></div><div><div class="v num">${fmtN(ucs)}</div><div class="k">clientes afetados</div></div><div class="k24${o24.length?" tem":""}" title="Ocorrências emergenciais abertas há mais de 24 horas"><div class="v num">${fmtN(o24.length)}</div><div class="k">+24h sem energia · ${fmtN(u24)} clientes</div></div></div>
+      <div class="reg-kpis k3">${kpis}</div>
       <div class="reg-abr"><span class="t abr-t">Ocorrências por abrangência</span><div class="ab-grid">${lista.map(([k,v])=>`<div class="ab"><span class="ab-n">${abrIcone(k)}${esc(k)}</span><span class="track"><span style="width:${v/mx*100}%"></span></span><b class="num">${fmtN(v)}</b></div>`).join("")||'<span class="small">Sem ocorrências</span>'}</div></div>
     </button>`});
   $("regs").innerHTML=`<div class="reg-topo">${cards[0]}</div>
